@@ -1,11 +1,12 @@
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-<<<<<<< Updated upstream
 using Application.Interfaces.Persistence;
 using Infrastructure.Repositories;
-using Infrastructure.Persistence;
-=======
->>>>>>> Stashed changes
+using Application.Interfaces.Services;
+using Application.UseCases.Subastas.CrearSubasta;
+using Application.UseCases.Subastas.ObtenerSubastas;
+using Domain.Entities;
+using Application.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +21,17 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<ISubastaRepository, SubastaRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IRepository<Subasta>, Repository<Subasta>>();
 
+builder.Services.AddScoped<
+    ICommandHandler<CrearSubastaCommand, SubastaDto>,
+    CrearSubastaHandler>();
+
+builder.Services.AddScoped<
+    IQueryHandler<ObtenerSubastasQuery, SubastaDto?>,
+    ObtenerSubastasHandler>();
+
+builder.Services.AddControllers();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -51,6 +62,8 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast")
 .WithOpenApi();
+
+app.MapControllers();
 
 app.Run();
 
