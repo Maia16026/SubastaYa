@@ -6,7 +6,7 @@ namespace Domain.Entities;
 public class AuditLog
 {
     public long Id { get; private set; }
-    public string Evento { get; private set; }
+    public string Evento { get; private set; } = null!;
     public string? Detalles { get; private set; }
     public int? UsuarioId { get; private set; }
     public int? SubastaId { get; private set; }

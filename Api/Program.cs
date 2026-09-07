@@ -1,8 +1,11 @@
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+<<<<<<< Updated upstream
 using Application.Interfaces.Persistence;
 using Infrastructure.Repositories;
 using Infrastructure.Persistence;
+=======
+>>>>>>> Stashed changes
 
 var builder = WebApplication.CreateBuilder(args);
 

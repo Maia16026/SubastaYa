@@ -9,7 +9,7 @@ public class Subasta
 
     public int VendedorId { get; private set; }
 
-    public string Titulo { get; private set; }= null!;
+    public string Titulo { get; private set; } = null!;
 
     public decimal PrecioBase { get; private set; }
 
