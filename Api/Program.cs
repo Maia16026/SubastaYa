@@ -6,6 +6,7 @@ using Application.Interfaces.Services;
 using Application.UseCases.Subastas.CrearSubasta;
 using Application.UseCases.Subastas.ObtenerSubastas;
 using Domain.Entities;
+using Infrastructure.Seed;
 using Application.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,6 +40,8 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    // Ejecutar seed solo en Development
+    await app.Services.SeedAsync();
 }
 
 app.UseHttpsRedirection();
