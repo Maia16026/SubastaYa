@@ -2,8 +2,9 @@ namespace Domain.Enums;
 
 public enum TipoMovimiento
 {
-    Ingreso,
-    Retencion,
-    Liberacion,
-    Debito
+    DEPOSITO,
+    RETENCION,
+    LIBERACION,
+    PAGO,
+    COBRO
 }

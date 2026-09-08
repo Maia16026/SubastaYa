@@ -16,11 +16,9 @@ public class SubastaConfiguration : IEntityTypeConfiguration<Subasta>
             .IsRequired()
             .HasMaxLength(200);
 
-        builder.Property(x => x.PrecioBase)
-            .HasPrecision(12, 2);
+        builder.Property(x => x.PrecioBase);
 
-        builder.Property(x => x.IncrementoMinimo)
-            .HasPrecision(12, 2);
+        builder.Property(x => x.IncrementoMinimo);
 
         builder.Property(x => x.Estado)
             .IsRequired()
@@ -32,19 +30,19 @@ public class SubastaConfiguration : IEntityTypeConfiguration<Subasta>
 
         builder.Property(x => x.FechaFin)
             .IsRequired();
-
-        builder.Property(x => x.RowVersion)
-            .IsRowVersion()
+        // Version como concurrency token (optimistic locking)
+        builder.Property(x => x.Version)
             .IsConcurrencyToken();
 
-        builder.HasOne<Usuario>()
-            .WithMany()
-            .HasForeignKey(x => x.VendedorId)
+        // Relación Vendedor (Usuario) 1:N explícita
+        builder.HasOne(s => s.Vendedor)
+            .WithMany(u => u.Subastas)
+            .HasForeignKey(s => s.VendedorId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<Usuario>()
-            .WithMany()
-            .HasForeignKey(x => x.GanadorId)
-            .OnDelete(DeleteBehavior.Restrict);
+        // Relación Categoria 1:N
+        builder.HasOne(s => s.Categoria)
+            .WithMany(c => c.Subastas)
+            .HasForeignKey(s => s.CategoriaId);
     }
 }

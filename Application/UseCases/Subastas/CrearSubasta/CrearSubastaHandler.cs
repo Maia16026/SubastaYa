@@ -25,7 +25,10 @@ public class CrearSubastaHandler
     {
         var subasta = new Subasta(
             command.VendedorId,
+            command.CategoriaId,
             command.Titulo,
+            command.Descripcion,
+            command.UrlImagen,
             command.PrecioBase,
             command.IncrementoMinimo,
             command.FechaInicio,
@@ -39,13 +42,15 @@ public class CrearSubastaHandler
         {
             Id = subasta.Id,
             VendedorId = subasta.VendedorId,
+            CategoriaId = subasta.CategoriaId,
             Titulo = subasta.Titulo,
+            Descripcion = subasta.Descripcion,
+            UrlImagen = subasta.UrlImagen,
             PrecioBase = subasta.PrecioBase,
             IncrementoMinimo = subasta.IncrementoMinimo,
             FechaInicio = subasta.FechaInicio,
             FechaFin = subasta.FechaFin,
-            Estado = subasta.Estado.ToString(),
-            GanadorId = subasta.GanadorId
+            Estado = subasta.Estado.ToString()
         };
     }
 }

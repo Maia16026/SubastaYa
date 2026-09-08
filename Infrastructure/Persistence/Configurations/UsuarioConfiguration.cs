@@ -23,12 +23,9 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
         builder.HasIndex(x => x.Email)
             .IsUnique();
 
-        builder.Property(x => x.SaldoTotal)
-            .HasPrecision(12, 2);
-
-        builder.Property(x => x.SaldoRetenido)
-            .HasPrecision(12, 2);
-
-        builder.Ignore(x => x.SaldoDisponible);
+        // Relación 1:1 Usuario <-> Billetera
+        builder.HasOne(u => u.Billetera)
+            .WithOne(b => b.Usuario)
+            .HasForeignKey<Billetera>(b => b.UsuarioId);
     }
 }

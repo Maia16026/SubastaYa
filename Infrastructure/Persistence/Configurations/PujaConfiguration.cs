@@ -14,25 +14,19 @@ public class PujaConfiguration : IEntityTypeConfiguration<Puja>
 
         builder.Property(x => x.Monto)
             .IsRequired()
-            .HasPrecision(12, 2);
+            ;
 
-        builder.Property(x => x.FechaHora)
+        builder.Property(x => x.FechaPuja)
             .IsRequired();
 
-        builder.HasOne<Usuario>()
-            .WithMany()
-            .HasForeignKey(x => x.UsuarioId)
-            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(p => p.Comprador)
+            .WithMany(u => u.Pujas)
+            .HasForeignKey(p => p.CompradorId);
 
-        builder.HasOne<Subasta>()
-            .WithMany()
-            .HasForeignKey(x => x.SubastaId)
-            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(p => p.Subasta)
+            .WithMany(s => s.Pujas)
+            .HasForeignKey(p => p.SubastaId);
 
-        builder.HasIndex(x => new
-        {
-            x.SubastaId,
-            x.FechaHora
-        });
+
     }
 }

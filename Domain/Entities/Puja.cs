@@ -1,4 +1,4 @@
-using Domain.Exceptions;
+using System;
 
 namespace Domain.Entities;
 
@@ -8,33 +8,23 @@ public class Puja
 
     public int SubastaId { get; private set; }
 
-    public int UsuarioId { get; private set; }
+    public int CompradorId { get; private set; }
 
     public decimal Monto { get; private set; }
 
-    public DateTime FechaHora { get; private set; }
+    public DateTime FechaPuja { get; private set; }
+
+    // Navegación
+    public Subasta Subasta { get; private set; } = null!;
+    public Usuario Comprador { get; private set; } = null!;
 
     protected Puja() { }
 
-    public Puja(
-        int subastaId,
-        int usuarioId,
-        decimal monto,
-        DateTime fechaHora)
+    public Puja(int subastaId, int compradorId, decimal monto, DateTime fechaPuja)
     {
-        if (subastaId <= 0)
-            throw new DomainException("La subasta es obligatoria.");
-
-        if (usuarioId <= 0)
-            throw new DomainException("El usuario es obligatorio.");
-
-        if (monto <= 0)
-            throw new DomainException(
-                "El monto debe ser mayor a cero.");
-
         SubastaId = subastaId;
-        UsuarioId = usuarioId;
+        CompradorId = compradorId;
         Monto = monto;
-        FechaHora = fechaHora;
+        FechaPuja = fechaPuja;
     }
 }

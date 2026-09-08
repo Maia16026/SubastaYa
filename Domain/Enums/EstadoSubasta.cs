@@ -2,8 +2,8 @@ namespace Domain.Enums;
 
 public enum EstadoSubasta
 {
-    Proxima,
-    Activa,
-    Finalizada,
-    Desierta
+    PROGRAMADA,
+    ACTIVA,
+    FINALIZADA,
+    DESIERTA
 }
