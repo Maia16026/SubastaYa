@@ -5,6 +5,7 @@ using Infrastructure.Repositories;
 using Application.Interfaces.Services;
 using Application.UseCases.Subastas.CrearSubasta;
 using Application.UseCases.Subastas.ObtenerSubastas;
+using Application.UseCases.Subastas.ObtenerSubastaPorId;
 using Domain.Entities;
 using Application.DTOs;
 
@@ -28,10 +29,18 @@ builder.Services.AddScoped<
     CrearSubastaHandler>();
 
 builder.Services.AddScoped<
-    IQueryHandler<ObtenerSubastasQuery, SubastaDto?>,
+    IQueryHandler<ObtenerSubastasQuery, List<SubastaDto>>,
     ObtenerSubastasHandler>();
 
-builder.Services.AddControllers();
+builder.Services.AddScoped<
+    IQueryHandler<ObtenerSubastaPorIdQuery, SubastaDto?>,
+    ObtenerSubastaPorIdHandler>();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

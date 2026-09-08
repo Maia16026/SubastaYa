@@ -1,7 +1,7 @@
 using Application.Interfaces.Persistence;
 using Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 using Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
@@ -11,5 +11,12 @@ public class SubastaRepository
     public SubastaRepository(AppDbContext context)
         : base(context)
     {
+    }
+
+    public async Task<List<Subasta>> ListarConPujasAsync()
+    {
+        return await _context.Subastas
+            .Include(s => s.Pujas)
+            .ToListAsync();
     }
 }
