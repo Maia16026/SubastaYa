@@ -8,6 +8,7 @@ using Application.UseCases.Subastas.ObtenerSubastas;
 using Application.UseCases.Subastas.ObtenerSubastaPorId;
 using Domain.Entities;
 using Application.DTOs;
+using Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +52,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<ExceptionMiddleware>();
 
 var summaries = new[]
 {
