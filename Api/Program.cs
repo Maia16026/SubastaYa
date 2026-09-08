@@ -6,6 +6,10 @@ using Application.Interfaces.Services;
 using Application.UseCases.Subastas.CrearSubasta;
 using Application.UseCases.Subastas.ObtenerSubastas;
 using Application.UseCases.Subastas.ObtenerSubastaPorId;
+using Application.UseCases.Subastas.Pujar;
+using Application.UseCases.Subastas.ObtenerPujas;
+using Application.UseCases.Subastas.ObtenerPujasPorComprador;
+using Application.UseCases.Subastas.ObtenerSubastasPorVendedor;
 using Domain.Entities;
 using Application.DTOs;
 using Api.Middleware;
@@ -42,6 +46,18 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
+builder.Services.AddCors(opciones =>
+    opciones.AddPolicy("frontend", politica =>
+        politica
+            .WithOrigins("http://localhost:5500")
+            .AllowAnyHeader()
+            .AllowAnyMethod()));
+
+builder.Services.AddScoped<CrearPujaHandler>();
+builder.Services.AddScoped<ObtenerPujasHandler>();
+builder.Services.AddScoped<ObtenerPujasPorCompradorHandler>();
+builder.Services.AddScoped<ObtenerSubastasPorVendedorHandler>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -73,6 +89,8 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast")
 .WithOpenApi();
+
+app.UseCors("frontend");
 
 app.MapControllers();
 

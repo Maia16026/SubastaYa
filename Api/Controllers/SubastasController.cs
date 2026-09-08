@@ -3,6 +3,7 @@ using Application.Interfaces.Services;
 using Application.UseCases.Subastas.CrearSubasta;
 using Application.UseCases.Subastas.ObtenerSubastaPorId;
 using Application.UseCases.Subastas.ObtenerSubastas;
+using Application.UseCases.Subastas.ObtenerSubastasPorVendedor; 
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -21,14 +22,18 @@ public class SubastasController : ControllerBase
         ObtenerSubastaPorIdQuery,
         SubastaDto?> _obtenerSubastaPorIdHandler;
 
+    private readonly ObtenerSubastasPorVendedorHandler _porVendedorHandler; 
+
     public SubastasController(
         ICommandHandler<CrearSubastaCommand, SubastaDto> crearSubastaHandler,
         IQueryHandler<ObtenerSubastasQuery, List<SubastaDto>> obtenerSubastasHandler,
-        IQueryHandler<ObtenerSubastaPorIdQuery, SubastaDto?> obtenerSubastaPorIdHandler)
+        IQueryHandler<ObtenerSubastaPorIdQuery, SubastaDto?> obtenerSubastaPorIdHandler,
+        ObtenerSubastasPorVendedorHandler porVendedorHandler)
     {
         _crearSubastaHandler = crearSubastaHandler;
         _obtenerSubastasHandler = obtenerSubastasHandler;
         _obtenerSubastaPorIdHandler = obtenerSubastaPorIdHandler;
+        _porVendedorHandler = porVendedorHandler; 
     }
 
     [HttpPost]
@@ -72,6 +77,17 @@ public class SubastasController : ControllerBase
 
         if (resultado is null)
             return NotFound();
+
+        return Ok(resultado);
+    }
+
+   
+    [HttpGet("vendedor/{vendedorId}")]
+    public async Task<IActionResult> ObtenerPorVendedor(int vendedorId)
+    {
+        var query = new ObtenerSubastasPorVendedorQuery(vendedorId);
+        
+        var resultado = await _porVendedorHandler.Handle(query);
 
         return Ok(resultado);
     }
