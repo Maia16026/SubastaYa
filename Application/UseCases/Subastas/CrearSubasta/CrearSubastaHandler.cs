@@ -2,6 +2,7 @@ using Application.DTOs;
 using Application.Interfaces.Persistence;
 using Application.Interfaces.Services;
 using Domain.Entities;
+using Domain.Exceptions;
 
 namespace Application.UseCases.Subastas.CrearSubasta;
 
@@ -23,6 +24,24 @@ public class CrearSubastaHandler
         CrearSubastaCommand command,
         CancellationToken ct = default)
     {
+        if (command.PrecioBase <= 0)
+        {
+            throw new DomainException(
+                "El precio base debe ser mayor a cero.");
+        }
+
+        if (command.IncrementoMinimo <= 0)
+        {
+            throw new DomainException(
+                "El incremento mínimo debe ser mayor a cero.");
+        }
+
+        if (command.FechaFin <= command.FechaInicio)
+        {
+            throw new DomainException(
+                "La fecha de finalización debe ser posterior a la fecha de inicio.");
+        }
+
         var subasta = new Subasta(
             command.VendedorId,
             command.CategoriaId,
@@ -50,7 +69,9 @@ public class CrearSubastaHandler
             IncrementoMinimo = subasta.IncrementoMinimo,
             FechaInicio = subasta.FechaInicio,
             FechaFin = subasta.FechaFin,
-            Estado = subasta.Estado.ToString()
+            Estado = subasta.Estado.ToString(),
+            PujaActual = null,
+            CantidadPujas = 0
         };
     }
 }
