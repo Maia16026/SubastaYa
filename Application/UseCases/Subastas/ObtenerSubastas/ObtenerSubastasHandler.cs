@@ -6,25 +6,67 @@ using Domain.Entities;
 namespace Application.UseCases.Subastas.ObtenerSubastas;
 
 public class ObtenerSubastasHandler
-    : IQueryHandler<ObtenerSubastasQuery, SubastaDto?>
+    : IQueryHandler<ObtenerSubastasQuery, List<SubastaDto>>
 {
-    private readonly IRepository<Subasta> _repository;
+    private readonly ISubastaRepository _repository;
 
-    public ObtenerSubastasHandler(IRepository<Subasta> repository)
+    public ObtenerSubastasHandler(ISubastaRepository repository)
     {
         _repository = repository;
     }
 
-    public async Task<SubastaDto?> Handle(
+    public async Task<List<SubastaDto>> Handle(
         ObtenerSubastasQuery query,
         CancellationToken ct = default)
     {
-        var subasta = await _repository.ObtenerAsync(query.Id);
+        var subastas = await _repository.ListarConPujasAsync();
 
-        if (subasta is null)
-            return null;
+        if (query.Estado.HasValue)
+        {
+            subastas = subastas
+                .Where(s => s.Estado == query.Estado.Value)
+                .ToList();
+        }
 
-        return new SubastaDto
+        if (query.CategoriaId.HasValue)
+        {
+            subastas = subastas
+                .Where(s => s.CategoriaId == query.CategoriaId.Value)
+                .ToList();
+        }
+
+        if (query.PrecioMin.HasValue)
+        {
+            subastas = subastas
+                .Where(s => s.PrecioBase >= query.PrecioMin.Value)
+                .ToList();
+        }
+
+        if (query.PrecioMax.HasValue)
+        {
+            subastas = subastas
+                .Where(s => s.PrecioBase <= query.PrecioMax.Value)
+                .ToList();
+        }
+
+        if (query.Orden?.ToLower() == "tiempo")
+        {
+            subastas = subastas
+                .OrderBy(s => s.FechaFin)
+                .ToList();
+        }
+
+        if (query.Orden?.ToLower() == "puja")
+        {
+            subastas = subastas
+                .OrderByDescending(s =>
+                    s.Pujas.Any()
+                        ? s.Pujas.Max(p => p.Monto)
+                        : 0)
+                .ToList();
+        }
+
+        return subastas.Select(subasta => new SubastaDto
         {
             Id = subasta.Id,
             VendedorId = subasta.VendedorId,
@@ -36,7 +78,13 @@ public class ObtenerSubastasHandler
             IncrementoMinimo = subasta.IncrementoMinimo,
             FechaInicio = subasta.FechaInicio,
             FechaFin = subasta.FechaFin,
-            Estado = subasta.Estado.ToString()
-        };
+            Estado = subasta.Estado.ToString(),
+
+            PujaActual = subasta.Pujas.Any()
+                ? subasta.Pujas.Max(p => p.Monto)
+                : null,
+
+            CantidadPujas = subasta.Pujas.Count
+        }).ToList();
     }
 }
