@@ -59,4 +59,13 @@ public class Subasta
         FechaInicio = fechaInicio;
         FechaFin = fechaFin;
     }
+    public void ExtenderPorAntiSniping()
+    {
+        FechaFin = FechaFin.AddMinutes(2);
+    }
+
+    public void IncrementarVersion()
+    {
+        Version++;
+    }
 }

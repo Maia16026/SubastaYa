@@ -18,6 +18,13 @@ public class ExceptionMiddleware
         {
             await _next(context);
         }
+        catch (ConcurrencyException ex) 
+        {
+            await ManejarExcepcion(
+                context,
+                StatusCodes.Status409Conflict,
+                ex.Message);
+        }
         catch (DomainException ex)
         {
             await ManejarExcepcion(
