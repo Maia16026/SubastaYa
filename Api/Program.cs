@@ -42,6 +42,12 @@ builder.Services.AddScoped<
     ICommandHandler<Application.UseCases.Billetera.DepositarSaldo.DepositarSaldoCommand, Application.DTOs.BilleteraDto?>,
     Application.UseCases.Billetera.DepositarSaldo.DepositarSaldoHandler>();
 
+// Transacciones: repository y query handler
+builder.Services.AddScoped<ITransaccionRepository, TransaccionRepository>();
+builder.Services.AddScoped<
+    IQueryHandler<Application.UseCases.Billetera.ObtenerTransacciones.ObtenerTransaccionesQuery, List<Application.DTOs.TransaccionDto>?>,
+    Application.UseCases.Billetera.ObtenerTransacciones.ObtenerTransaccionesHandler>();
+
 builder.Services.AddControllers();
 var app = builder.Build();
 
