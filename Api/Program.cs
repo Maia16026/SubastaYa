@@ -32,6 +32,16 @@ builder.Services.AddScoped<
     IQueryHandler<ObtenerSubastasQuery, SubastaDto?>,
     ObtenerSubastasHandler>();
 
+// Billetera: repository y handler CQRS
+builder.Services.AddScoped<IBilleteraRepository, BilleteraRepository>();
+builder.Services.AddScoped<
+    IQueryHandler<Application.UseCases.Billetera.ObtenerBilletera.ObtenerBilleteraQuery, Application.DTOs.BilleteraDto?>,
+    Application.UseCases.Billetera.ObtenerBilletera.ObtenerBilleteraHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<Application.UseCases.Billetera.DepositarSaldo.DepositarSaldoCommand, Application.DTOs.BilleteraDto?>,
+    Application.UseCases.Billetera.DepositarSaldo.DepositarSaldoHandler>();
+
 builder.Services.AddControllers();
 var app = builder.Build();
 
@@ -43,6 +53,9 @@ if (app.Environment.IsDevelopment())
     // Ejecutar seed solo en Development
     await app.Services.SeedAsync();
 }
+
+// Middleware global de excepciones: mapear DomainException -> 400, otras -> 500
+app.UseMiddleware<Api.Middleware.ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 

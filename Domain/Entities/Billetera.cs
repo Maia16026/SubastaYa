@@ -31,4 +31,12 @@ public class Billetera
         SaldoDisponible = saldoDisponible;
         Version = version;
     }
+
+    public void Depositar(decimal monto)
+    {
+        // Ajustar saldos de forma consistente
+        SaldoTotal += monto;
+        // SaldoRetenido no cambia
+        SaldoDisponible = SaldoTotal - SaldoRetenido;
+    }
 }
