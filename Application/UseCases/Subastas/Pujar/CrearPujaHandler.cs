@@ -2,6 +2,7 @@ using Application.Interfaces.Persistence;
 using Domain.Entities;
 using Domain.Enums;
 using Domain.Exceptions;
+using System.Text.Json;
 
 namespace Application.UseCases.Subastas.Pujar;
 
@@ -11,16 +12,19 @@ public class CrearPujaHandler
     private readonly IRepository<Puja> _pujaRepository;
     private readonly IRepository<Billetera> _billeteraRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IRepository<AuditoriaLog> _auditoriaRepository;
 
     public CrearPujaHandler(
         IRepository<Subasta> subastaRepository,
         IRepository<Puja> pujaRepository,
         IRepository<Billetera> billeteraRepository,
+        IRepository<AuditoriaLog> auditoriaRepository,
         IUnitOfWork unitOfWork)
     {
         _subastaRepository = subastaRepository;
         _pujaRepository = pujaRepository;
         _billeteraRepository = billeteraRepository;
+        _auditoriaRepository = auditoriaRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -146,11 +150,30 @@ public class CrearPujaHandler
             // 13. Anti-sniping:
             // Aplicamos la corrección sugerida para que no detecte subastas vencidas
             var tiempoRestante = subasta.FechaFin - ahora;
-            if (tiempoRestante >= TimeSpan.Zero && tiempoRestante <= TimeSpan.FromSeconds(60))
+                    
+
+            if (tiempoRestante >= TimeSpan.Zero &&
+                tiempoRestante <= TimeSpan.FromSeconds(60))
             {
                 subasta.ExtenderPorAntiSniping();
-            }
 
+                var detalleAntiSniping = JsonSerializer.Serialize(new
+                {
+                    subastaId = subasta.Id,
+                    compradorId = command.CompradorId,
+                    extensionMinutos = 2,
+                    fecha = ahora
+                });
+
+                await _auditoriaRepository.AgregarAsync(
+                    new AuditoriaLog(
+                        "Subasta",
+                        subasta.Id,
+                        "EXTENSION_ANTI_SNIPING",
+                        detalleAntiSniping,
+                        ahora,
+                        command.CompradorId));
+            }
             // 14. Guardar todo
             await _unitOfWork.SaveChangesAsync();
 
