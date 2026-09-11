@@ -26,6 +26,10 @@ builder.Services.AddScoped<ISubastaRepository, SubastaRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IRepository<Subasta>, Repository<Subasta>>();
 
+// Billetera: repositorios necesarios
+builder.Services.AddScoped<IBilleteraRepository, BilleteraRepository>();
+builder.Services.AddScoped<ITransaccionRepository, TransaccionRepository>();
+
 builder.Services.AddScoped<
     ICommandHandler<CrearSubastaCommand, SubastaDto>,
     CrearSubastaHandler>();
@@ -33,6 +37,19 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     IQueryHandler<ObtenerSubastasQuery, List<SubastaDto>>,
     ObtenerSubastasHandler>();
+
+// Handlers de Billetera (CQRS)
+builder.Services.AddScoped<
+    IQueryHandler<Application.UseCases.Billetera.ObtenerBilletera.ObtenerBilleteraQuery, Application.DTOs.BilleteraDto?>,
+    Application.UseCases.Billetera.ObtenerBilletera.ObtenerBilleteraHandler>();
+
+builder.Services.AddScoped<
+    ICommandHandler<Application.UseCases.Billetera.DepositarSaldo.DepositarSaldoCommand, Application.DTOs.BilleteraDto?>,
+    Application.UseCases.Billetera.DepositarSaldo.DepositarSaldoHandler>();
+
+builder.Services.AddScoped<
+    IQueryHandler<Application.UseCases.Billetera.ObtenerTransacciones.ObtenerTransaccionesQuery, List<Application.DTOs.TransaccionDto>?>,
+    Application.UseCases.Billetera.ObtenerTransacciones.ObtenerTransaccionesHandler>();
 
 builder.Services.AddScoped<
     IQueryHandler<ObtenerSubastaPorIdQuery, SubastaDto?>,
