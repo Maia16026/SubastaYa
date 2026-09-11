@@ -13,4 +13,6 @@ public class SubastaDto
     public DateTime FechaInicio { get; set; }
     public DateTime FechaFin { get; set; }
     public string Estado { get; set; } = null!;
+    public decimal? PujaActual { get; set; }
+    public int CantidadPujas { get; set; }
 }

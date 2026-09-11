@@ -1,6 +1,7 @@
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Infrastructure.Persistence.Configurations;
 
@@ -25,11 +26,17 @@ public class SubastaConfiguration : IEntityTypeConfiguration<Subasta>
             .HasConversion<string>()
             .HasMaxLength(20);
 
+        var dateTimeConverter = new ValueConverter<DateTime, DateTime>(
+            v => v,
+            v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
         builder.Property(x => x.FechaInicio)
-            .IsRequired();
+            .IsRequired()
+            .HasConversion(dateTimeConverter);
 
         builder.Property(x => x.FechaFin)
-            .IsRequired();
+            .IsRequired()
+            .HasConversion(dateTimeConverter);
         // Version como concurrency token (optimistic locking)
         builder.Property(x => x.Version)
             .IsConcurrencyToken();

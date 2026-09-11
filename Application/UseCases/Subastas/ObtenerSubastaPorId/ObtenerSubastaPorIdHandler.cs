@@ -1,34 +1,30 @@
 using Application.DTOs;
 using Application.Interfaces.Persistence;
 using Application.Interfaces.Services;
-using Domain.Entities;
 using System.Linq;
 
-namespace Application.UseCases.Subastas.ObtenerSubastas;
+namespace Application.UseCases.Subastas.ObtenerSubastaPorId;
 
-public class ObtenerSubastasHandler
-    : IQueryHandler<ObtenerSubastasQuery, List<SubastaDto>>
+public class ObtenerSubastaPorIdHandler
+    : IQueryHandler<ObtenerSubastaPorIdQuery, SubastaDto?>
 {
     private readonly ISubastaRepository _repository;
 
-    public ObtenerSubastasHandler(ISubastaRepository repository)
+    public ObtenerSubastaPorIdHandler(ISubastaRepository repository)
     {
         _repository = repository;
     }
 
-    public async Task<List<SubastaDto>> Handle(
-        ObtenerSubastasQuery query,
+    public async Task<SubastaDto?> Handle(
+        ObtenerSubastaPorIdQuery query,
         CancellationToken ct = default)
     {
-        var subastas = await _repository.ListarConPujasAsync(
-            query.Estado,
-            query.CategoriaId,
-            query.PrecioMin,
-            query.PrecioMax,
-            query.Orden,
-            ct);
+        var subasta = await _repository.ObtenerConPujasAsync(query.Id, ct);
 
-        return subastas.Select(subasta => new SubastaDto
+        if (subasta is null)
+            return null;
+
+        return new SubastaDto
         {
             Id = subasta.Id,
             VendedorId = subasta.VendedorId,
@@ -41,12 +37,8 @@ public class ObtenerSubastasHandler
             FechaInicio = subasta.FechaInicio,
             FechaFin = subasta.FechaFin,
             Estado = subasta.Estado.ToString(),
-
-            PujaActual = subasta.Pujas.Any()
-                ? subasta.Pujas.Max(p => p.Monto)
-                : null,
-
+            PujaActual = subasta.Pujas.Any() ? subasta.Pujas.Max(p => p.Monto) : null,
             CantidadPujas = subasta.Pujas.Count
-        }).ToList();
+        };
     }
 }
