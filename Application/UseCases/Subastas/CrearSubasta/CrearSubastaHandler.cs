@@ -10,13 +10,19 @@ public class CrearSubastaHandler
     : ICommandHandler<CrearSubastaCommand, SubastaDto>
 {
     private readonly IRepository<Subasta> _repository;
+    private readonly IRepository<Usuario> _usuarioRepository;
+    private readonly IRepository<Categoria> _categoriaRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public CrearSubastaHandler(
         IRepository<Subasta> repository,
+        IRepository<Usuario> usuarioRepository,
+        IRepository<Categoria> categoriaRepository,
         IUnitOfWork unitOfWork)
     {
         _repository = repository;
+        _usuarioRepository = usuarioRepository;
+        _categoriaRepository = categoriaRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -36,10 +42,25 @@ public class CrearSubastaHandler
                 "El incremento mínimo debe ser mayor a cero.");
         }
 
-        if (command.FechaFin <= command.FechaInicio)
+        var fechaInicioUtc = command.FechaInicio.UtcDateTime;
+        var fechaFinUtc = command.FechaFin.UtcDateTime;
+
+        if (fechaFinUtc <= fechaInicioUtc)
         {
             throw new DomainException(
                 "La fecha de finalización debe ser posterior a la fecha de inicio.");
+        }
+
+        var vendedor = await _usuarioRepository.ObtenerAsync(command.VendedorId);
+        if (vendedor == null)
+        {
+            throw new DomainException("Vendedor inexistente");
+        }
+
+        var categoria = await _categoriaRepository.ObtenerAsync(command.CategoriaId);
+        if (categoria == null)
+        {
+            throw new DomainException("Categoría inexistente");
         }
 
         var subasta = new Subasta(
@@ -50,8 +71,8 @@ public class CrearSubastaHandler
             command.UrlImagen,
             command.PrecioBase,
             command.IncrementoMinimo,
-            command.FechaInicio,
-            command.FechaFin);
+            fechaInicioUtc,
+            fechaFinUtc);
 
         await _repository.AgregarAsync(subasta);
 

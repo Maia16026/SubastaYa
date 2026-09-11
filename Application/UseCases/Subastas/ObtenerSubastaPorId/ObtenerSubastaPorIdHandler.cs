@@ -1,16 +1,16 @@
 using Application.DTOs;
 using Application.Interfaces.Persistence;
 using Application.Interfaces.Services;
-using Domain.Entities;
+using System.Linq;
 
 namespace Application.UseCases.Subastas.ObtenerSubastaPorId;
 
 public class ObtenerSubastaPorIdHandler
     : IQueryHandler<ObtenerSubastaPorIdQuery, SubastaDto?>
 {
-    private readonly IRepository<Subasta> _repository;
+    private readonly ISubastaRepository _repository;
 
-    public ObtenerSubastaPorIdHandler(IRepository<Subasta> repository)
+    public ObtenerSubastaPorIdHandler(ISubastaRepository repository)
     {
         _repository = repository;
     }
@@ -19,7 +19,7 @@ public class ObtenerSubastaPorIdHandler
         ObtenerSubastaPorIdQuery query,
         CancellationToken ct = default)
     {
-        var subasta = await _repository.ObtenerAsync(query.Id);
+        var subasta = await _repository.ObtenerConPujasAsync(query.Id, ct);
 
         if (subasta is null)
             return null;
@@ -36,7 +36,9 @@ public class ObtenerSubastaPorIdHandler
             IncrementoMinimo = subasta.IncrementoMinimo,
             FechaInicio = subasta.FechaInicio,
             FechaFin = subasta.FechaFin,
-            Estado = subasta.Estado.ToString()
+            Estado = subasta.Estado.ToString(),
+            PujaActual = subasta.Pujas.Any() ? subasta.Pujas.Max(p => p.Monto) : null,
+            CantidadPujas = subasta.Pujas.Count
         };
     }
 }

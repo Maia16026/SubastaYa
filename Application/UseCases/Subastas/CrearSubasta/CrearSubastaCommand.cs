@@ -8,5 +8,5 @@ public record CrearSubastaCommand(
     string UrlImagen,
     decimal PrecioBase,
     decimal IncrementoMinimo,
-    DateTime FechaInicio,
-    DateTime FechaFin);
+    DateTimeOffset FechaInicio,
+    DateTimeOffset FechaFin);
