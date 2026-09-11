@@ -145,12 +145,7 @@ public class DatabaseSeeder
         var existing = await ctx.Billeteras.SingleOrDefaultAsync(b => b.UsuarioId == usuarioId, ct);
         if (existing != null)
         {
-            // Actualizar saldos para el escenario seed
-            var entry = ctx.Entry(existing);
-            entry.Property("SaldoTotal").CurrentValue = total;
-            entry.Property("SaldoRetenido").CurrentValue = retenido;
-            entry.Property("SaldoDisponible").CurrentValue = disponible;
-            // no hacemos SaveChanges aquí para agrupar
+            // Si ya existe, devolverla sin modificar datos de negocio
             return existing;
         }
 
@@ -188,13 +183,7 @@ public class DatabaseSeeder
         var existing = await ctx.Subastas.SingleOrDefaultAsync(s => s.Titulo == titulo, cancellationToken);
         if (existing != null)
         {
-            // Actualizar fechas y estado
-            existing.GetType(); // noop para claridad
-            var entry = ctx.Entry(existing);
-            entry.Property("FechaInicio").CurrentValue = fechaInicio;
-            entry.Property("FechaFin").CurrentValue = fechaFin;
-            entry.Property("Estado").CurrentValue = estado;
-            // No guardar aquí
+            // Si ya existe la subasta, devolverla sin modificar fechas/estado
             return existing;
         }
 
@@ -203,10 +192,9 @@ public class DatabaseSeeder
         // Ajustar campo Titulo visible: el constructor puso el Titulo (seed id)
         // Si queremos un texto más amigable lo podríamos usar en Descripcion o similar; aquí dejamos Titulo como identificador.
         ctx.Subastas.Add(s);
-        await ctx.SaveChangesAsync(cancellationToken);
-
-        // Establecer Estado explícito
+        // Establecer Estado explícito ANTES de guardar para que el objeto creado tenga el estado correcto
         ctx.Entry(s).Property("Estado").CurrentValue = estado;
+        await ctx.SaveChangesAsync(cancellationToken);
         return s;
     }
 
@@ -215,9 +203,7 @@ public class DatabaseSeeder
         var existing = await ctx.Pujas.SingleOrDefaultAsync(p => p.SubastaId == subastaId && p.CompradorId == compradorId && p.Monto == monto, ct);
         if (existing != null)
         {
-            // Actualizar FechaPuja para mantenerla dentro del nuevo periodo
-            var entry = ctx.Entry(existing);
-            entry.Property("FechaPuja").CurrentValue = fechaPuja;
+            // Si ya existe la puja, no tocar la FechaPuja ni otros campos
             return;
         }
 
