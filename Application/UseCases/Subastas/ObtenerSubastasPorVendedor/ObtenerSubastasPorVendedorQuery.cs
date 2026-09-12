@@ -1,0 +1,3 @@
+namespace Application.UseCases.Subastas.ObtenerSubastasPorVendedor;
+
+public record ObtenerSubastasPorVendedorQuery(int VendedorId);
