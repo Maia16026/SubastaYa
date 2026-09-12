@@ -10,6 +10,10 @@ using Domain.Entities;
 using Infrastructure.Seed;
 using Application.DTOs;
 using Api.Middleware;
+using Application.UseCases.Subastas.Pujar;
+using Application.UseCases.Subastas.ObtenerPujas;
+using Application.UseCases.Subastas.ObtenerPujasPorComprador;
+using Application.UseCases.Subastas.ObtenerSubastasPorVendedor;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +58,12 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     IQueryHandler<ObtenerSubastaPorIdQuery, SubastaDto?>,
     ObtenerSubastaPorIdHandler>();
+
+// Handlers de Pujas (feature/pujas)
+builder.Services.AddScoped<CrearPujaHandler>();
+builder.Services.AddScoped<ObtenerPujasHandler>();
+builder.Services.AddScoped<ObtenerPujasPorCompradorHandler>();
+builder.Services.AddScoped<ObtenerSubastasPorVendedorHandler>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

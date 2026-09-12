@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Domain.Exceptions;
 
 namespace Domain.Entities;
 
@@ -38,5 +39,34 @@ public class Billetera
         SaldoTotal += monto;
         // SaldoRetenido no cambia
         SaldoDisponible = SaldoTotal - SaldoRetenido;
+    }
+
+    public void Retener(decimal monto)
+    {
+        if (monto <= 0)
+            throw new DomainException("El monto debe ser mayor a cero.");
+
+        if (SaldoDisponible < monto)
+            throw new DomainException("Saldo insuficiente.");
+
+        SaldoDisponible -= monto;
+        SaldoRetenido += monto;
+    }
+
+    public void Liberar(decimal monto)
+    {
+        if (monto <= 0)
+            throw new DomainException("El monto debe ser mayor a cero.");
+
+        if (SaldoRetenido < monto)
+            throw new DomainException("Saldo retenido insuficiente.");
+
+        SaldoRetenido -= monto;
+        SaldoDisponible += monto;
+    }
+
+    public void IncrementarVersion()
+    {
+        Version++;
     }
 }

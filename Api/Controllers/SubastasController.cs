@@ -4,6 +4,7 @@ using Application.UseCases.Subastas.CrearSubasta;
 using Application.UseCases.Subastas.ObtenerSubastaPorId;
 using Application.UseCases.Subastas.ObtenerSubastas;
 using Microsoft.AspNetCore.Mvc;
+using Application.UseCases.Subastas.ObtenerSubastasPorVendedor;
 
 namespace Api.Controllers;
 
@@ -72,6 +73,15 @@ public class SubastasController : ControllerBase
 
         if (resultado is null)
             return NotFound();
+
+        return Ok(resultado);
+    }
+
+    [HttpGet("/api/vendedores/{vendedorId}/subastas")]
+    public async Task<IActionResult> ObtenerPorVendedor(int vendedorId, [FromServices] ObtenerSubastasPorVendedorHandler handler)
+    {
+        var query = new ObtenerSubastasPorVendedorQuery(vendedorId);
+        var resultado = await handler.Handle(query);
 
         return Ok(resultado);
     }
