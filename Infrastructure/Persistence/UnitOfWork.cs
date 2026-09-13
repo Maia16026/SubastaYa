@@ -1,6 +1,7 @@
 using Application.Interfaces.Persistence;
 using Microsoft.EntityFrameworkCore.Storage;
 using Domain.Exceptions;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence;
@@ -64,5 +65,15 @@ public class UnitOfWork : IUnitOfWork
         await _transaction.DisposeAsync();
 
         _transaction = null;
+    }
+    public async Task RegistrarEventoIndependienteAsync(
+        AuditoriaLog log,
+        CancellationToken cancellationToken = default)
+    {
+        _context.ChangeTracker.Clear();
+
+        _context.AuditoriaLogs.Add(log);
+
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }
