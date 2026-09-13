@@ -2,6 +2,7 @@ using Application.Interfaces.Persistence;
 using Domain.Entities;
 using Domain.Enums;
 using Domain.Exceptions;
+using System.Text.Json;
 
 namespace Application.UseCases.Subastas.Pujar;
 
@@ -12,18 +13,21 @@ public class CrearPujaHandler
     private readonly IBilleteraRepository _billeteraRepository;
     private readonly ITransaccionRepository _transaccionRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IRepository<AuditoriaLog> _auditoriaRepository;
 
     public CrearPujaHandler(
         IRepository<Subasta> subastaRepository,
         IRepository<Puja> pujaRepository,
         IBilleteraRepository billeteraRepository,
         ITransaccionRepository transaccionRepository,
+        IRepository<AuditoriaLog> auditoriaRepository,
         IUnitOfWork unitOfWork)
     {
         _subastaRepository = subastaRepository;
         _pujaRepository = pujaRepository;
         _billeteraRepository = billeteraRepository;
         _transaccionRepository = transaccionRepository;
+        _auditoriaRepository = auditoriaRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -166,9 +170,28 @@ public class CrearPujaHandler
             var tiempoRestante = subasta.FechaFin - ahora;
             if (tiempoRestante >= TimeSpan.Zero && tiempoRestante <= TimeSpan.FromSeconds(60))
             {
-                subasta.ExtenderPorAntiSniping();
-            }
+                var fechaFinAnterior = subasta.FechaFin;
 
+                subasta.ExtenderPorAntiSniping();
+
+                var detalleJson = JsonSerializer.Serialize(new
+                {
+                    FechaFinAnterior = fechaFinAnterior,
+                    FechaFinNueva = subasta.FechaFin,
+                    MontoPuja = command.Monto
+                });
+
+                var auditoriaExtension = new AuditoriaLog(
+                    entidad: "SUBASTA",
+                    entidadId: subasta.Id,
+                    accion: "EXTENSION_ANTISNIPING",
+                    detalleJson: detalleJson,
+                    fecha: ahora,
+                    usuarioId: command.CompradorId);
+
+                await _auditoriaRepository.AgregarAsync(auditoriaExtension);
+            }
+            
             // Guardar todo
             await _unitOfWork.SaveChangesAsync();
 
