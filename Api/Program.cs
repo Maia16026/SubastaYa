@@ -39,7 +39,7 @@ builder.Services.AddScoped<
     CrearSubastaHandler>();
 
 builder.Services.AddScoped<
-    IQueryHandler<ObtenerSubastasQuery, List<SubastaDto>>,
+    IQueryHandler<ObtenerSubastasQuery, SubastasPaginadasDto>,
     ObtenerSubastasHandler>();
 
 // Handlers de Billetera (CQRS)

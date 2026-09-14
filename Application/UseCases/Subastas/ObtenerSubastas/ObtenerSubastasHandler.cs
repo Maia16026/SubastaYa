@@ -2,12 +2,13 @@ using Application.DTOs;
 using Application.Interfaces.Persistence;
 using Application.Interfaces.Services;
 using Domain.Entities;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Application.UseCases.Subastas.ObtenerSubastas;
 
 public class ObtenerSubastasHandler
-    : IQueryHandler<ObtenerSubastasQuery, List<SubastaDto>>
+    : IQueryHandler<ObtenerSubastasQuery, SubastasPaginadasDto>
 {
     private readonly ISubastaRepository _repository;
 
@@ -16,37 +17,68 @@ public class ObtenerSubastasHandler
         _repository = repository;
     }
 
-    public async Task<List<SubastaDto>> Handle(
+    public async Task<SubastasPaginadasDto> Handle(
         ObtenerSubastasQuery query,
         CancellationToken ct = default)
     {
-        var subastas = await _repository.ListarConPujasAsync(
+        // Solicitar al repositorio la página solicitada y el total filtrado
+        var result = await _repository.ListarConPujasPaginadasAsync(
             query.Estado,
             query.CategoriaId,
             query.PrecioMin,
             query.PrecioMax,
             query.Orden,
+            query.Pagina,
+            query.TamanioPagina,
             ct);
 
-        return subastas.Select(subasta => new SubastaDto
+        var items = result.Items;
+        var total = result.TotalRegistros;
+
+        // Mapear entidades a DTOs de forma explícita y clara
+        var dtos = new List<SubastaDto>();
+
+        foreach (var subasta in items)
         {
-            Id = subasta.Id,
-            VendedorId = subasta.VendedorId,
-            CategoriaId = subasta.CategoriaId,
-            Titulo = subasta.Titulo,
-            Descripcion = subasta.Descripcion,
-            UrlImagen = subasta.UrlImagen,
-            PrecioBase = subasta.PrecioBase,
-            IncrementoMinimo = subasta.IncrementoMinimo,
-            FechaInicio = subasta.FechaInicio,
-            FechaFin = subasta.FechaFin,
-            Estado = subasta.Estado.ToString(),
+            var dto = new SubastaDto
+            {
+                Id = subasta.Id,
+                VendedorId = subasta.VendedorId,
+                CategoriaId = subasta.CategoriaId,
+                Titulo = subasta.Titulo,
+                Descripcion = subasta.Descripcion,
+                UrlImagen = subasta.UrlImagen,
+                PrecioBase = subasta.PrecioBase,
+                IncrementoMinimo = subasta.IncrementoMinimo,
+                FechaInicio = subasta.FechaInicio,
+                FechaFin = subasta.FechaFin,
+                Estado = subasta.Estado.ToString(),
+                PujaActual = subasta.Pujas.Any()
+                    ? subasta.Pujas.Max(p => p.Monto)
+                    : null,
+                CantidadPujas = subasta.Pujas.Count
+            };
 
-            PujaActual = subasta.Pujas.Any()
-                ? subasta.Pujas.Max(p => p.Monto)
-                : null,
+            dtos.Add(dto);
+        }
 
-            CantidadPujas = subasta.Pujas.Count
-        }).ToList();
+        // Calcular total de páginas
+        var totalPaginas = 0;
+
+        if (query.TamanioPagina > 0)
+        {
+            totalPaginas =
+                (int)System.Math.Ceiling(
+                    (double)total / query.TamanioPagina);
+        }
+
+        return new SubastasPaginadasDto
+        {
+            Pagina = query.Pagina,
+            TamanioPagina = query.TamanioPagina,
+            TotalRegistros = total,
+            TotalPaginas = totalPaginas,
+            Items = dtos
+        };
     }
 }

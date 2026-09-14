@@ -13,5 +13,15 @@ public interface ISubastaRepository : IRepository<Subasta>
         string? orden,
         CancellationToken ct = default);
 
+    Task<(List<Subasta> Items, int TotalRegistros)> ListarConPujasPaginadasAsync(
+        EstadoSubasta? estado,
+        int? categoriaId,
+        decimal? precioMin,
+        decimal? precioMax,
+        string? orden,
+        int pagina,
+        int tamanioPagina,
+        CancellationToken ct = default);
+
     Task<Subasta?> ObtenerConPujasAsync(int id, CancellationToken ct = default);
 }
