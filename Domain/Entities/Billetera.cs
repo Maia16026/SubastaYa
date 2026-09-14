@@ -69,4 +69,27 @@ public class Billetera
     {
         Version++;
     }
+
+    public void Pagar(decimal monto)
+    {
+        if (monto <= 0)
+            throw new DomainException("El monto debe ser mayor a cero.");
+
+        if (SaldoRetenido < monto)
+            throw new DomainException("Saldo retenido insuficiente.");
+
+        SaldoRetenido -= monto;
+        SaldoTotal -= monto;
+        // Intencional: NO modificar SaldoDisponible aquí
+    }
+
+    public void Cobrar(decimal monto)
+    {
+        if (monto <= 0)
+            throw new DomainException("El monto debe ser mayor a cero.");
+
+        SaldoTotal += monto;
+        SaldoDisponible += monto;
+        // Intencional: NO modificar SaldoRetenido aquí
+    }
 }
