@@ -2,6 +2,7 @@ using Application.Interfaces.Persistence;
 using Domain.Entities;
 using Domain.Enums;
 using Domain.Exceptions;
+using System.Text.Json;
 
 namespace Application.UseCases.Subastas.Pujar;
 
@@ -12,18 +13,21 @@ public class CrearPujaHandler
     private readonly IBilleteraRepository _billeteraRepository;
     private readonly ITransaccionRepository _transaccionRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IRepository<AuditoriaLog> _auditoriaRepository;
 
     public CrearPujaHandler(
         IRepository<Subasta> subastaRepository,
         IRepository<Puja> pujaRepository,
         IBilleteraRepository billeteraRepository,
         ITransaccionRepository transaccionRepository,
+        IRepository<AuditoriaLog> auditoriaRepository,
         IUnitOfWork unitOfWork)
     {
         _subastaRepository = subastaRepository;
         _pujaRepository = pujaRepository;
         _billeteraRepository = billeteraRepository;
         _transaccionRepository = transaccionRepository;
+        _auditoriaRepository = auditoriaRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -166,7 +170,26 @@ public class CrearPujaHandler
             var tiempoRestante = subasta.FechaFin - ahora;
             if (tiempoRestante >= TimeSpan.Zero && tiempoRestante <= TimeSpan.FromSeconds(60))
             {
+                var fechaFinAnterior = subasta.FechaFin;
+
                 subasta.ExtenderPorAntiSniping();
+
+                var detalleJson = JsonSerializer.Serialize(new
+                {
+                    FechaFinAnterior = fechaFinAnterior,
+                    FechaFinNueva = subasta.FechaFin,
+                    MontoPuja = command.Monto
+                });
+
+                var auditoriaExtension = new AuditoriaLog(
+                    entidad: "SUBASTA",
+                    entidadId: subasta.Id,
+                    accion: "EXTENSION_ANTISNIPING",
+                    detalleJson: detalleJson,
+                    fecha: ahora,
+                    usuarioId: command.CompradorId);
+
+                await _auditoriaRepository.AgregarAsync(auditoriaExtension);
             }
 
             // Guardar todo
@@ -177,11 +200,69 @@ public class CrearPujaHandler
 
             return nuevaPuja.Id;
         }
+        catch (DomainException ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+
+            try
+            {
+                await RegistrarRechazoAsync(
+                    command,
+                    "VALIDACION_NEGOCIO",
+                    ex.Message);
+            }
+            catch
+            {
+                // No reemplazar la excepción original si la auditoría falla.
+            }
+
+            throw;
+        }
+        catch (ConcurrencyException ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+
+            try
+            {
+                await RegistrarRechazoAsync(
+                    command,
+                    "CONCURRENCIA",
+                    ex.Message);
+            }
+            catch
+            {
+                // No reemplazar la excepción original si la auditoría falla.
+            }
+
+            throw;
+        }
         catch
         {
-            // Revertir la transacción ante cualquier error
+            // Revertir la transacción ante cualquier otro error (ej. NotFoundException)
             await _unitOfWork.RollbackTransactionAsync();
             throw;
         }
+    }
+
+    private async Task RegistrarRechazoAsync(CrearPujaCommand command, string motivo, string detalle)
+    {
+        var detalleJson = JsonSerializer.Serialize(new
+        {
+            SubastaId = command.SubastaId,
+            CompradorId = command.CompradorId,
+            MontoIntentado = command.Monto,
+            Motivo = motivo,
+            Detalle = detalle
+        });
+
+        var auditoriaRechazo = new AuditoriaLog(
+            entidad: "SUBASTA",
+            entidadId: command.SubastaId,
+            accion: "PUJA_RECHAZADA",
+            detalleJson: detalleJson,
+            fecha: DateTime.UtcNow,
+            usuarioId: command.CompradorId);
+
+        await _unitOfWork.RegistrarEventoIndependienteAsync(auditoriaRechazo);
     }
 }

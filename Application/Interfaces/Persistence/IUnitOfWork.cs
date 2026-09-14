@@ -1,3 +1,5 @@
+using Domain.Entities;
+
 namespace Application.Interfaces.Persistence;
 
 public interface IUnitOfWork
@@ -11,5 +13,9 @@ public interface IUnitOfWork
         CancellationToken cancellationToken = default);
 
     Task RollbackTransactionAsync(
+        CancellationToken cancellationToken = default);
+
+    Task RegistrarEventoIndependienteAsync(
+        AuditoriaLog log,
         CancellationToken cancellationToken = default);
 }
