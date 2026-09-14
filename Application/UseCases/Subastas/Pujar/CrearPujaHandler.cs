@@ -57,7 +57,7 @@ public class CrearPujaHandler
             if (ahora < subasta.FechaInicio)
                 throw new DomainException("La subasta todavía no comenzó.");
 
-            if (ahora > subasta.FechaFin)
+            if (ahora >= subasta.FechaFin)
                 throw new DomainException("La subasta ya finalizó.");
 
             // Buscar las pujas de esta subasta

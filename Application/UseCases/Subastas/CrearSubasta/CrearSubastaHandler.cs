@@ -30,6 +30,20 @@ public class CrearSubastaHandler
         CrearSubastaCommand command,
         CancellationToken ct = default)
     {
+        if (string.IsNullOrWhiteSpace(command.Titulo))
+        {
+            throw new DomainException("El título de la subasta es obligatorio.");
+        }
+
+        if (string.IsNullOrWhiteSpace(command.Descripcion))
+        {
+            throw new DomainException("La descripción de la subasta es obligatoria.");
+        }
+
+        if (string.IsNullOrWhiteSpace(command.UrlImagen))
+        {
+            throw new DomainException("La URL de imagen es obligatoria.");
+        }
         if (command.PrecioBase <= 0)
         {
             throw new DomainException(
