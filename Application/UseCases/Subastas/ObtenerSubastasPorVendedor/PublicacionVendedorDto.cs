@@ -8,4 +8,5 @@ public class PublicacionVendedorDto
     public decimal? PujaActual { get; set; }
     public int CantidadPujas { get; set; }
     public decimal? MontoAdjudicado { get; set; }
+    public string EstadoAdjudicacion { get; set; } = null!;
 }

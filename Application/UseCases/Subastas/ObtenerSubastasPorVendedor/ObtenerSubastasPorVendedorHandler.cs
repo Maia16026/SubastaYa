@@ -52,8 +52,14 @@ public class ObtenerSubastasPorVendedorHandler
             {
                 montoAdjudicado = pujaActual;
             }
+            // 9. EstadoAdjudicacion
+            var estadoAdjudicacion = subasta.Estado switch { EstadoSubasta.PROGRAMADA => "PENDIENTE",
+                 EstadoSubasta.ACTIVA => "PENDIENTE",
+                 EstadoSubasta.FINALIZADA => "ADJUDICADA",
+                 EstadoSubasta.DESIERTA => "SIN_ADJUDICAR",
+                 _ => "PENDIENTE" };
 
-            // 9. Agregar DTO
+            // 10. Agregar DTO
             resultado.Add(new PublicacionVendedorDto
             {
                 SubastaId = subasta.Id,
@@ -61,11 +67,12 @@ public class ObtenerSubastasPorVendedorHandler
                 Estado = subasta.Estado.ToString(),
                 PujaActual = pujaActual,
                 CantidadPujas = cantidadPujas,
-                MontoAdjudicado = montoAdjudicado
+                MontoAdjudicado = montoAdjudicado,
+                EstadoAdjudicacion = estadoAdjudicacion
             });
         }
 
-        // 10. return
+        // 11. return
         return resultado;
     }
 }
