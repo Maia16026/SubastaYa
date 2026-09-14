@@ -3,8 +3,8 @@ using Application.Interfaces.Services;
 using Application.UseCases.Subastas.CrearSubasta;
 using Application.UseCases.Subastas.ObtenerSubastaPorId;
 using Application.UseCases.Subastas.ObtenerSubastas;
-using Microsoft.AspNetCore.Mvc;
 using Application.UseCases.Subastas.ObtenerSubastasPorVendedor;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
@@ -16,7 +16,7 @@ public class SubastasController : ControllerBase
 
     private readonly IQueryHandler<
         ObtenerSubastasQuery,
-        List<SubastaDto>> _obtenerSubastasHandler;
+        SubastasPaginadasDto> _obtenerSubastasHandler;
 
     private readonly IQueryHandler<
         ObtenerSubastaPorIdQuery,
@@ -24,7 +24,7 @@ public class SubastasController : ControllerBase
 
     public SubastasController(
         ICommandHandler<CrearSubastaCommand, SubastaDto> crearSubastaHandler,
-        IQueryHandler<ObtenerSubastasQuery, List<SubastaDto>> obtenerSubastasHandler,
+        IQueryHandler<ObtenerSubastasQuery, SubastasPaginadasDto> obtenerSubastasHandler,
         IQueryHandler<ObtenerSubastaPorIdQuery, SubastaDto?> obtenerSubastaPorIdHandler)
     {
         _crearSubastaHandler = crearSubastaHandler;
@@ -50,14 +50,28 @@ public class SubastasController : ControllerBase
         [FromQuery] int? categoriaId,
         [FromQuery] decimal? precioMin,
         [FromQuery] decimal? precioMax,
-        [FromQuery] string? orden)
+        [FromQuery] string? orden,
+        [FromQuery] int pagina = 1,
+        [FromQuery] int tamanioPagina = 10)
     {
+        if (pagina <= 0)
+        {
+            return BadRequest("El parámetro 'pagina' debe ser mayor que 0.");
+        }
+
+        if (tamanioPagina <= 0)
+        {
+            return BadRequest("El parámetro 'tamanioPagina' debe ser mayor que 0.");
+        }
+
         var query = new ObtenerSubastasQuery(
             estado,
             categoriaId,
             precioMin,
             precioMax,
-            orden);
+            orden,
+            pagina,
+            tamanioPagina);
 
         var resultado = await _obtenerSubastasHandler.Handle(query);
 
@@ -72,15 +86,20 @@ public class SubastasController : ControllerBase
         var resultado = await _obtenerSubastaPorIdHandler.Handle(query);
 
         if (resultado is null)
+        {
             return NotFound();
+        }
 
         return Ok(resultado);
     }
 
     [HttpGet("/api/vendedores/{vendedorId}/subastas")]
-    public async Task<IActionResult> ObtenerPorVendedor(int vendedorId, [FromServices] ObtenerSubastasPorVendedorHandler handler)
+    public async Task<IActionResult> ObtenerPorVendedor(
+        int vendedorId,
+        [FromServices] ObtenerSubastasPorVendedorHandler handler)
     {
         var query = new ObtenerSubastasPorVendedorQuery(vendedorId);
+
         var resultado = await handler.Handle(query);
 
         return Ok(resultado);

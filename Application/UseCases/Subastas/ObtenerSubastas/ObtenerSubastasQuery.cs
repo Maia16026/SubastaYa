@@ -7,4 +7,6 @@ public record ObtenerSubastasQuery(
     int? CategoriaId,
     decimal? PrecioMin,
     decimal? PrecioMax,
-    string? Orden);
+    string? Orden,
+    int Pagina,
+    int TamanioPagina);
