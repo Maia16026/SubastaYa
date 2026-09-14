@@ -23,5 +23,15 @@ public interface ISubastaRepository : IRepository<Subasta>
         int tamanioPagina,
         CancellationToken ct = default);
 
-    Task<Subasta?> ObtenerConPujasAsync(int id, CancellationToken ct = default);
+    Task<Subasta?> ObtenerConPujasAsync(
+        int id,
+        CancellationToken ct = default);
+
+    Task<List<Subasta>> ListarProgramadasParaActivarAsync(
+        DateTime ahora,
+        CancellationToken ct = default);
+
+    Task<List<Subasta>> ListarActivasVencidasConPujasAsync(
+        DateTime ahora,
+        CancellationToken ct = default);
 }
