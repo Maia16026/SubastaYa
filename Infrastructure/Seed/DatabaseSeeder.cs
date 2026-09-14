@@ -21,12 +21,14 @@ public class DatabaseSeeder
         var comprador1 = await EnsureUsuarioAsync(context, "comprador1@test.com", "Comprador1", "seed-hash", now, cancellationToken);
         var comprador2 = await EnsureUsuarioAsync(context, "comprador2@test.com", "Comprador2", "seed-hash", now, cancellationToken);
         var sinfondos = await EnsureUsuarioAsync(context, "sinfondos@test.com", "SinFondos", "seed-hash", now, cancellationToken);
+        var compradorWorker = await EnsureUsuarioAsync(context, "compradorworker@test.com", "CompradorWorker", "seed-hash", now, cancellationToken);
 
         // 2) Billeteras (crear o actualizar saldos a los valores requeridos)
         var billeVendedor = await EnsureBilleteraAsync(context, vendedor.Id, 0m, 0m, 0m, cancellationToken);
         var billeComprador1 = await EnsureBilleteraAsync(context, comprador1.Id, 150000m, 45000m, 105000m, cancellationToken);
         var billeComprador2 = await EnsureBilleteraAsync(context, comprador2.Id, 200000m, 0m, 200000m, cancellationToken);
         var billeSinFondos = await EnsureBilleteraAsync(context, sinfondos.Id, 500m, 0m, 500m, cancellationToken);
+        var billeCompradorWorker = await EnsureBilleteraAsync(context, compradorWorker.Id, 3000m, 3000m, 0m, cancellationToken);
 
         // 3) Categorías
         var catTec = await EnsureCategoriaAsync(context, "Tecnología", "/icons/tecnologia.png", cancellationToken);
@@ -111,9 +113,8 @@ public class DatabaseSeeder
         await EnsurePujaAsync(context, sActivaEstandar.Id, comprador2.Id, 40000m, now.AddMinutes(-0.5), cancellationToken);
         await EnsurePujaAsync(context, sActivaEstandar.Id, comprador1.Id, 45000m, now.AddMinutes(-0.2), cancellationToken);
 
-        // Vencida con ganador: al menos una puja ganadora (por ejemplo comprador1)
-        await EnsurePujaAsync(context, sVencidaGanador.Id, comprador1.Id, 3000m, now.AddDays(-1).AddHours(-1), cancellationToken);
-
+        // Vencida con ganador: puja respaldada por la billetera auxiliar del Worker
+        await EnsurePujaAsync(context, sVencidaGanador.Id, compradorWorker.Id, 3000m, now.AddDays(-1).AddHours(-1), cancellationToken);
         // No crear pujas para vencida desierta
 
         // 6) Ledger seed
@@ -121,8 +122,10 @@ public class DatabaseSeeder
         await EnsureTransaccionDepositoAsync(context, billeComprador1.Id, 150000m, cancellationToken);
         await EnsureTransaccionDepositoAsync(context, billeComprador2.Id, 200000m, cancellationToken);
         await EnsureTransaccionDepositoAsync(context, billeSinFondos.Id, 500m, cancellationToken);
+        await EnsureTransaccionDepositoAsync(context, billeCompradorWorker.Id, 3000m, cancellationToken);
         // Retención de 45000 para comprador1 asociada a la subasta activa estándar
         await EnsureTransaccionRetencionAsync(context, billeComprador1.Id, 45000m, sActivaEstandar.Id, cancellationToken);
+        await EnsureTransaccionRetencionAsync(context, billeCompradorWorker.Id, 3000m, sVencidaGanador.Id, cancellationToken);
         // Guardar todo y terminar
         await context.SaveChangesAsync(cancellationToken);
     }
