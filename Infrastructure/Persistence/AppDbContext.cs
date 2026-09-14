@@ -31,4 +31,31 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration(new TransaccionLedgerConfiguration());
         modelBuilder.ApplyConfiguration(new AuditoriaLogConfiguration());
     }
+    public override int SaveChanges()
+    {
+        ValidarAuditoriasInmutables();
+
+        return base.SaveChanges();
+    }
+
+    public override Task<int> SaveChangesAsync(
+        CancellationToken cancellationToken = default)
+    {
+        ValidarAuditoriasInmutables();
+
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void ValidarAuditoriasInmutables()
+    {
+        foreach (var entrada in ChangeTracker.Entries<AuditoriaLog>())
+        {
+            if (entrada.State == EntityState.Modified ||
+                entrada.State == EntityState.Deleted)
+            {
+                throw new InvalidOperationException(
+                    "Los registros de auditoría son inmutables y no pueden modificarse ni eliminarse.");
+            }
+        }
+    }
 }
