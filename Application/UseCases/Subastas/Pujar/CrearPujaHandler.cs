@@ -191,7 +191,7 @@ public class CrearPujaHandler
 
                 await _auditoriaRepository.AgregarAsync(auditoriaExtension);
             }
-            
+
             // Guardar todo
             await _unitOfWork.SaveChangesAsync();
 
@@ -203,13 +203,37 @@ public class CrearPujaHandler
         catch (DomainException ex)
         {
             await _unitOfWork.RollbackTransactionAsync();
-            await RegistrarRechazoAsync(command, "VALIDACION_NEGOCIO", ex.Message);
+
+            try
+            {
+                await RegistrarRechazoAsync(
+                    command,
+                    "VALIDACION_NEGOCIO",
+                    ex.Message);
+            }
+            catch
+            {
+                // No reemplazar la excepción original si la auditoría falla.
+            }
+
             throw;
         }
         catch (ConcurrencyException ex)
         {
             await _unitOfWork.RollbackTransactionAsync();
-            await RegistrarRechazoAsync(command, "CONCURRENCIA", ex.Message);
+
+            try
+            {
+                await RegistrarRechazoAsync(
+                    command,
+                    "CONCURRENCIA",
+                    ex.Message);
+            }
+            catch
+            {
+                // No reemplazar la excepción original si la auditoría falla.
+            }
+
             throw;
         }
         catch
@@ -219,6 +243,7 @@ public class CrearPujaHandler
             throw;
         }
     }
+
     private async Task RegistrarRechazoAsync(CrearPujaCommand command, string motivo, string detalle)
     {
         var detalleJson = JsonSerializer.Serialize(new
@@ -231,7 +256,7 @@ public class CrearPujaHandler
         });
 
         var auditoriaRechazo = new AuditoriaLog(
-            entidad: "PUJA",
+            entidad: "SUBASTA",
             entidadId: command.SubastaId,
             accion: "PUJA_RECHAZADA",
             detalleJson: detalleJson,
