@@ -123,7 +123,6 @@ public class DatabaseSeeder
         await EnsureTransaccionDepositoAsync(context, billeSinFondos.Id, 500m, cancellationToken);
         // Retención de 45000 para comprador1 asociada a la subasta activa estándar
         await EnsureTransaccionRetencionAsync(context, billeComprador1.Id, 45000m, sActivaEstandar.Id, cancellationToken);
-
         // Guardar todo y terminar
         await context.SaveChangesAsync(cancellationToken);
     }

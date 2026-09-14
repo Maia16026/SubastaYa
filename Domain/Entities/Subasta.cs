@@ -68,4 +68,19 @@ public class Subasta
     {
         Version++;
     }
+
+    public void Activar()
+    {
+        Estado = EstadoSubasta.ACTIVA;
+    }
+
+    public void Finalizar()
+    {
+        Estado = EstadoSubasta.FINALIZADA;
+    }
+
+    public void MarcarDesierta()
+    {
+        Estado = EstadoSubasta.DESIERTA;
+    }
 }

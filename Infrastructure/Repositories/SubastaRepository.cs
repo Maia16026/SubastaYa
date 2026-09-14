@@ -156,4 +156,27 @@ public class SubastaRepository
             .Include(s => s.Pujas)
             .FirstOrDefaultAsync(s => s.Id == id, ct);
     }
+
+    public async Task<List<Subasta>> ListarProgramadasParaActivarAsync(
+        DateTime ahora,
+        CancellationToken ct = default)
+    {
+        return await _context.Subastas
+            .Where(s =>
+                s.Estado == EstadoSubasta.PROGRAMADA &&
+                s.FechaInicio <= ahora)
+            .ToListAsync(ct);
+    }
+
+    public async Task<List<Subasta>> ListarActivasVencidasConPujasAsync(
+        DateTime ahora,
+        CancellationToken ct = default)
+    {
+        return await _context.Subastas
+            .Include(s => s.Pujas)
+            .Where(s =>
+                s.Estado == EstadoSubasta.ACTIVA &&
+                s.FechaFin <= ahora)
+            .ToListAsync(ct);
+    }
 }
