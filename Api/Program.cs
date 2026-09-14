@@ -14,6 +14,8 @@ using Application.UseCases.Subastas.Pujar;
 using Application.UseCases.Subastas.ObtenerPujas;
 using Application.UseCases.Subastas.ObtenerPujasPorComprador;
 using Application.UseCases.Subastas.ObtenerSubastasPorVendedor;
+using Application.UseCases.Subastas.ProcesarSubastas;
+using Api.Background;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,6 +66,10 @@ builder.Services.AddScoped<CrearPujaHandler>();
 builder.Services.AddScoped<ObtenerPujasHandler>();
 builder.Services.AddScoped<ObtenerPujasPorCompradorHandler>();
 builder.Services.AddScoped<ObtenerSubastasPorVendedorHandler>();
+
+// Procesamiento automático de subastas
+builder.Services.AddScoped<ProcesarSubastasHandler>();
+builder.Services.AddHostedService<ProcesarSubastasWorker>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

@@ -24,7 +24,7 @@ public class DatabaseSeeder
 
         // 2) Billeteras (crear o actualizar saldos a los valores requeridos)
         var billeVendedor = await EnsureBilleteraAsync(context, vendedor.Id, 0m, 0m, 0m, cancellationToken);
-        var billeComprador1 = await EnsureBilleteraAsync(context, comprador1.Id, 150000m, 45000m, 105000m, cancellationToken);
+        var billeComprador1 = await EnsureBilleteraAsync(context, comprador1.Id, 150000m, 48000m, 102000m, cancellationToken);
         var billeComprador2 = await EnsureBilleteraAsync(context, comprador2.Id, 200000m, 0m, 200000m, cancellationToken);
         var billeSinFondos = await EnsureBilleteraAsync(context, sinfondos.Id, 500m, 0m, 500m, cancellationToken);
 
@@ -123,7 +123,8 @@ public class DatabaseSeeder
         await EnsureTransaccionDepositoAsync(context, billeSinFondos.Id, 500m, cancellationToken);
         // Retención de 45000 para comprador1 asociada a la subasta activa estándar
         await EnsureTransaccionRetencionAsync(context, billeComprador1.Id, 45000m, sActivaEstandar.Id, cancellationToken);
-
+        // Retención de 3000 para comprador1 asociada a la subasta vencida con ganador
+        await EnsureTransaccionRetencionAsync(context, billeComprador1.Id, 3000m, sVencidaGanador.Id, cancellationToken);
         // Guardar todo y terminar
         await context.SaveChangesAsync(cancellationToken);
     }
