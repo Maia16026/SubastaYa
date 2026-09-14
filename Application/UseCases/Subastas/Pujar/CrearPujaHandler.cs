@@ -44,6 +44,9 @@ public class CrearPujaHandler
             if (subasta == null)
                 throw new NotFoundException("La subasta no existe.");
 
+            if (subasta.VendedorId == command.CompradorId)
+                throw new DomainException("El vendedor no puede pujar en su propia subasta.");
+
             // Validar estado de la subasta
             if (subasta.Estado != EstadoSubasta.ACTIVA)
                 throw new DomainException("La subasta no está activa.");
