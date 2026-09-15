@@ -436,6 +436,7 @@ async function enviarPuja(monto) {
         const mensaje = err.mensaje ?? err.message ?? "Error al registrar la puja.";
 
         if (tipo === "CONCURRENCIA") {
+
             mostrarToast(mensaje, "warn");
 
             sessionStorage.setItem(
@@ -446,6 +447,17 @@ async function enviarPuja(monto) {
             sessionStorage.removeItem(
                 `lidera-${subastaId}`
             );
+
+        }
+        else if (tipo === "NEGOCIO") {
+
+            mostrarToast(mensaje, "error");
+
+        }
+        else {
+
+            mostrarToast(mensaje, "error");
+
         }
 
         await refrescar();
