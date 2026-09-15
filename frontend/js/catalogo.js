@@ -296,7 +296,7 @@ function crearCard(s) {
                 <p class="auction-category">${esc(catNombre)}</p>
                 
                 <small>${labelPrecio}</small>
-                <p class="auction-price">$ ${moneda(montoMostrado)}</p>
+                <p class="auction-price">${moneda(montoMostrado)}</p>
                 
                 <div class="auction-info">
                     <span>

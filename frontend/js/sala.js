@@ -30,9 +30,14 @@ const counterEl     = document.getElementById("galeria-counter");
 const prevBtn       = document.querySelector(".galeria-arrow--prev");
 const nextBtn       = document.querySelector(".galeria-arrow--next");
 
-// Panel de puja
+// Panel de puja y resultado
+const panelPujaEl      = document.getElementById("panel-puja");
+const panelResultadoEl = document.getElementById("panel-resultado");
+const bannerAntisnipingEl = document.getElementById("banner-antisniping");
+
 const pujaActualEl  = document.getElementById("puja-actual-monto");
 const timerEl       = document.getElementById("sala-timer");
+const timerLabelEl  = document.querySelector(".metrica.metrica--timer .metrica__label");
 const fechaFinEl    = document.getElementById("sala-fecha-fin");
 const ofertasEl     = document.getElementById("sala-ofertas");
 const incMinEl      = document.getElementById("sala-incremento");
@@ -129,10 +134,7 @@ async function refrescar() {
 
         // Detectar extensión de tiempo (Anti-Sniping)
         if (fechaFinPrevia && subasta.fechaFin !== fechaFinPrevia) {
-            mostrarToast(
-                "⏱ Tiempo extendido +2 minutos por regla Anti-Sniping",
-                "info"
-            );
+            mostrarBannerAntisniping(subasta.fechaFin);
         }
         fechaFinPrevia = subasta.fechaFin;
         estadoActual   = subasta;
@@ -141,6 +143,38 @@ async function refrescar() {
 
     } catch (err) {
         console.error("Error al refrescar la sala:", err);
+    }
+}
+
+function mostrarBannerAntisniping(nuevaFechaFin) {
+    if (!bannerAntisnipingEl) return;
+    
+    // Calcular minutos y segundos restantes basados en la nueva fecha
+    const msRestantes = new Date(nuevaFechaFin) - new Date();
+    if (msRestantes > 0) {
+        const m = Math.floor((msRestantes / 1000) / 60).toString().padStart(2, "0");
+        const s = Math.floor((msRestantes / 1000) % 60).toString().padStart(2, "0");
+        const tiempoStr = `${m}:${s}`;
+        
+        bannerAntisnipingEl.innerHTML = `
+            <i class="fa-solid fa-stopwatch banner-antisniping__icono"></i>
+            <div class="banner-antisniping__cuerpo">
+                <span class="banner-antisniping__titulo">¡Subasta extendida!</span>
+                <span class="banner-antisniping__texto">Una nueva puja fue realizada en el último minuto.<br>Se agregaron 2 minutos al tiempo restante.</span>
+                <span class="banner-antisniping__tiempo">Nuevo tiempo restante: ${tiempoStr}</span>
+            </div>
+            <button class="banner-antisniping__cerrar" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+        `;
+        
+        bannerAntisnipingEl.classList.remove("hidden");
+        
+        // Agregar listener para cerrar
+        const btnCerrar = bannerAntisnipingEl.querySelector(".banner-antisniping__cerrar");
+        if (btnCerrar) {
+            btnCerrar.addEventListener("click", () => {
+                bannerAntisnipingEl.classList.add("hidden");
+            });
+        }
     }
 }
 function obtenerImagenProducto(subasta) {
@@ -288,9 +322,13 @@ function actualizarUI(s, pujas) {
     if (pujaActualEl) pujaActualEl.textContent = moneda(montoActual);
     if (ofertasEl)    ofertasEl.textContent    = `${s.cantidadPujas} oferta${s.cantidadPujas !== 1 ? "s" : ""}`;
 
-    // Fecha de finalización bajo el timer
-    if (fechaFinEl && s.fechaFin) {
-        fechaFinEl.textContent = formatFechaCorta(s.fechaFin);
+    // Fecha bajo el timer (Inicio o Fin dependiendo del estado)
+    if (fechaFinEl) {
+        if (s.estado === "PROGRAMADA" && s.fechaInicio) {
+            fechaFinEl.textContent = formatFechaCorta(s.fechaInicio);
+        } else if (s.fechaFin) {
+            fechaFinEl.textContent = formatFechaCorta(s.fechaFin);
+        }
     }
 
     // Próxima puja e incremento mínimo
@@ -298,14 +336,26 @@ function actualizarUI(s, pujas) {
     if (incMinEl)    incMinEl.textContent   = moneda(s.incrementoMinimo);
     if (proxPujaEl)  proxPujaEl.textContent = moneda(proxMonto);
 
-    // Botón de puja rápida
-    if (btnPujaRapEl) {
-        if (textoPujaRapEl) textoPujaRapEl.textContent = `PUJAR ${moneda(proxMonto)}`;
-        btnPujaRapEl.dataset.monto = proxMonto;
-        const activa = s.estado === "ACTIVA";
-        btnPujaRapEl.disabled      = !activa;
-        if (btnRealizarEl) btnRealizarEl.disabled = !activa;
-        if (inputMontoEl)  inputMontoEl.disabled  = !activa;
+    // Manejo de paneles (Puja vs Resultado)
+    if (s.estado === "FINALIZADA" || s.estado === "DESIERTA") {
+        if (panelPujaEl) panelPujaEl.classList.add("hidden");
+        if (panelResultadoEl) {
+            panelResultadoEl.classList.remove("hidden");
+            renderizarPanelResultado(s, pujas);
+        }
+    } else {
+        if (panelPujaEl) panelPujaEl.classList.remove("hidden");
+        if (panelResultadoEl) panelResultadoEl.classList.add("hidden");
+        
+        // Botón de puja rápida y estado de inputs (solo si está ACTIVA o PROGRAMADA)
+        if (btnPujaRapEl) {
+            if (textoPujaRapEl) textoPujaRapEl.textContent = `PUJAR ${moneda(proxMonto)}`;
+            btnPujaRapEl.dataset.monto = proxMonto;
+            const activa = s.estado === "ACTIVA";
+            btnPujaRapEl.disabled      = !activa;
+            if (btnRealizarEl) btnRealizarEl.disabled = !activa;
+            if (inputMontoEl)  inputMontoEl.disabled  = !activa;
+        }
     }
 
     // Banner de estado del postor (basado en la sesión actual)
@@ -321,47 +371,88 @@ function actualizarUI(s, pujas) {
     }
 }
 
+function renderizarPanelResultado(s, pujas) {
+    if (!panelResultadoEl) return;
+    const hayGanador = pujas && pujas.length > 0 && s.estado === "FINALIZADA";
+
+    if (hayGanador) {
+        // Encontrar la puja con mayor monto defensivamente
+        const pujaGanadora = pujas.reduce((max, p) => p.monto > max.monto ? p : max, pujas[0]);
+        const ganador = pujaGanadora.seudonimo;
+        const monto = s.pujaActual ?? pujaGanadora.monto;
+        
+        panelResultadoEl.innerHTML = `
+            <i class="fa-solid fa-trophy resultado-icono resultado-icono--ganador"></i>
+            <h3 class="resultado-titulo">La subasta ha finalizado</h3>
+            <p class="resultado-sin-pujas">Puja ganadora</p>
+            <p class="resultado-monto">${moneda(monto)}</p>
+            <div class="resultado-ganador">
+                <i class="fa-regular fa-user"></i> Ganador: <strong>${ganador}</strong>
+            </div>
+            <div class="resultado-separator"></div>
+            <div class="resultado-fecha">
+                <i class="fa-regular fa-calendar"></i>
+                <span>Finalizó el<br>${formatFechaCorta(s.fechaFin)}</span>
+            </div>
+        `;
+    } else {
+        panelResultadoEl.innerHTML = `
+            <i class="fa-solid fa-gavel resultado-icono resultado-icono--desierto"></i>
+            <h3 class="resultado-titulo">La subasta finalizó sin ofertas</h3>
+            <p class="resultado-sin-pujas">No se recibieron pujas en esta subasta.</p>
+            <div class="resultado-separator"></div>
+            <div class="resultado-fecha">
+                <i class="fa-regular fa-calendar"></i>
+                <span>Finalizó el<br>${formatFechaCorta(s.fechaFin)}</span>
+            </div>
+        `;
+    }
+}
+
 // TEMPORIZADOR
-function actualizarTimer(fechaFin, estado) {
+function actualizarTimer(fechaFinStr, estado) {
     if (!timerEl) return;
 
-    // Subasta todavía no comenzó
     if (estado === "PROGRAMADA") {
+        if (timerLabelEl) {
+            timerLabelEl.innerHTML = `<i class="fa-regular fa-clock"></i> Inicia en`;
+            timerLabelEl.classList.remove("metrica__label--critico");
+        }
+        
         const inicio = estadoActual?.fechaInicio;
-
         if (!inicio) {
             timerEl.textContent = "Próximamente";
             timerEl.className = "sala-timer sala-timer--warn";
             return;
         }
-
+        
         const restanMs = new Date(inicio).getTime() - Date.now();
-
         if (restanMs <= 0) {
             timerEl.textContent = "Iniciando...";
             timerEl.className = "sala-timer sala-timer--warn";
             return;
         }
-
-        timerEl.textContent = `Inicia en ${msTiempo(restanMs)}`;
+        
+        timerEl.textContent = msTiempo(restanMs);
         timerEl.className = "sala-timer sala-timer--warn";
         return;
     }
 
-    // Subasta finalizada o desierta
     if (estado === "FINALIZADA" || estado === "DESIERTA") {
-        timerEl.textContent = "Finalizada";
-        timerEl.className = "sala-timer sala-timer--inactivo";
         detenerPolling();
-        return;
+        return; // El panel se oculta, no hace falta actualizar el DOM visual del timer
     }
 
-    // Subasta activa
-    const restanMs = new Date(fechaFin).getTime() - Date.now();
+    // Subasta ACTIVA
+    const restanMs = new Date(fechaFinStr).getTime() - Date.now();
 
     if (restanMs <= 0) {
         timerEl.textContent = "00:00:00";
         timerEl.className = "sala-timer sala-timer--critico";
+        if (timerLabelEl) {
+            timerLabelEl.innerHTML = `<i class="fa-regular fa-clock"></i> Finalizando`;
+            timerLabelEl.classList.add("metrica__label--critico");
+        }
         return;
     }
 
@@ -369,12 +460,19 @@ function actualizarTimer(fechaFin, estado) {
 
     if (restanMs < 60_000) {
         timerEl.className = "sala-timer sala-timer--critico";
-    }
-    else if (restanMs < 120_000) {
-        timerEl.className = "sala-timer sala-timer--warn";
-    }
-    else {
+        if (timerLabelEl) {
+            timerLabelEl.innerHTML = `<i class="fa-regular fa-clock"></i> Últimos segundos`;
+            timerLabelEl.classList.add("metrica__label--critico");
+        }
+    } else {
         timerEl.className = "sala-timer";
+        if (timerLabelEl) {
+            timerLabelEl.innerHTML = `<i class="fa-regular fa-clock"></i> Finaliza en`;
+            timerLabelEl.classList.remove("metrica__label--critico");
+        }
+        if (restanMs < 120_000) {
+            timerEl.className = "sala-timer sala-timer--warn";
+        }
     }
 }
 
@@ -383,15 +481,25 @@ function actualizarTimer(fechaFin, estado) {
 function actualizarBannerPostor(s) {
     if (!bannerPostorEl) return;
 
-    // Si la subasta no está activa, mostrar banner neutral
-    if (s.estado !== "ACTIVA") {
-        bannerPostorEl.className = "banner-estado banner-estado--info";
-        bannerPostorEl.innerHTML = `
-            <i class="fa-solid fa-circle-check"></i>
-            <div class="banner-estado__textos">
-                <strong>Subasta finalizada</strong>
-                <span>Esta subasta ya no admite nuevas ofertas.</span>
-            </div>`;
+    // Si la subasta no está activa, mostrar banner correspondiente según si hubo pujas
+    if (s.estado === "FINALIZADA" || s.estado === "DESIERTA") {
+        if (s.cantidadPujas > 0) {
+            bannerPostorEl.className = "banner-estado banner-estado--lidera";
+            bannerPostorEl.innerHTML = `
+                <i class="fa-solid fa-circle-check"></i>
+                <div class="banner-estado__textos">
+                    <strong>Esta subasta ha finalizado.</strong>
+                    <span>Gracias a todos los participantes por formar parte.</span>
+                </div>`;
+        } else {
+            bannerPostorEl.className = "banner-estado banner-estado--info";
+            bannerPostorEl.innerHTML = `
+                <i class="fa-solid fa-circle-info"></i>
+                <div class="banner-estado__textos">
+                    <strong>No hubo ofertas</strong>
+                    <span>Esta subasta terminó sin pujas.</span>
+                </div>`;
+        }
         return;
     }
 
@@ -434,7 +542,6 @@ function actualizarBannerPostor(s) {
             </div>`;
     }
 }
-
 // ENVIAR PUJA RÁPIDA (botón "PUJAR $X")
 async function enviarPujaRapida() {
     const monto = parseFloat(btnPujaRapEl?.dataset.monto ?? 0);
@@ -525,12 +632,33 @@ function formatFechaCorta(iso) {
 function renderizarHistorial(pujas) {
     if (!historialEl) return;
 
+    if (pujas.length === 0) {
+        if (estadoActual && (estadoActual.estado === "FINALIZADA" || estadoActual.estado === "DESIERTA")) {
+            historialEl.innerHTML = `
+                <tr><td colspan="4" style="border:none; padding:0;">
+                    <div class="historial-vacio-grande">
+                        <i class="fa-solid fa-file-invoice"></i>
+                        <p>No hay pujas para mostrar.</p>
+                        <span>Sé el primero en participar en la próxima subasta.</span>
+                    </div>
+                </td></tr>`;
+        } else {
+            historialEl.innerHTML = `
+                <tr><td colspan="4" style="border:none; padding:0;">
+                    <div class="historial-vacio-grande">
+                        <i class="fa-solid fa-file-invoice"></i>
+                        <p>Aún no hay pujas.</p>
+                        <span>Sé el primero en ofertar.</span>
+                    </div>
+                </td></tr>`;
+        }
+        return;
+    }
+
     const cantidad = mostrandoTodas ? pujas.length : Math.min(pujas.length, 5);
     const mostrar  = pujas.slice(0, cantidad);
 
-    historialEl.innerHTML = mostrar.length === 0
-        ? `<tr><td colspan="4" class="historial-vacio">Aún no hay pujas en esta subasta.</td></tr>`
-        : mostrar.map((p, i) => `
+    historialEl.innerHTML = mostrar.map((p, i) => `
             <tr class="${i === 0 ? "historial-lider" : ""}">
                 <td>${i + 1}</td>
                 <td>

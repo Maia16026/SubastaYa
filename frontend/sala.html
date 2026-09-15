@@ -287,6 +287,14 @@
 
             </div><!-- /panel-puja -->
 
+            <!-- Panel de resultado: reemplaza al panel de puja cuando la subasta finaliza -->
+            <!-- JS oculta panel-puja y muestra este div dinámicamente -->
+            <div id="panel-resultado" class="panel-resultado hidden" aria-live="polite"></div>
+
+            <!-- Banner anti-sniping: aparece cuando el backend extiende la subasta -->
+            <!-- Detectado por: cambio en fechaFin entre dos ciclos de polling -->
+            <div id="banner-antisniping" class="banner-antisniping hidden" role="status" aria-live="polite"></div>
+
             <!-- Banner de estado del postor (ancho completo, debajo del panel oscuro) -->
             <div id="banner-postor" class="banner-estado banner-estado--info" role="status" aria-live="polite">
                 <i class="fa-solid fa-circle-info"></i>
@@ -341,12 +349,9 @@
         <div class="container">
             <div class="footer-content">
                 <div>
-                    <strong>
-                        <span class="footer-subasta">Subasta</span><span class="footer-ya">Ya</span>
-                    </strong>
-                    <small>OFERTÁ PARA GANAR</small>
+                    <img src="assets/img/logo.png" alt="SubastaYa" class="logo-footer">
                 </div>
-                <p>© SubastaYa — Plataforma de subastas</p>
+                <p>© 2026 SubastaYa. Todos los derechos reservados.</p>
             </div>
         </div>
     </footer>

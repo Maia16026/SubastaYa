@@ -248,14 +248,25 @@
 .garantia i { font-size: 1.5rem; color: var(--azul-claro); }
 
 /* ── COLUMNA DERECHA (Panel de Puja) ── */
+.sala-col-der {
+    position: sticky;
+    top: 24px;
+    display: flex;
+    flex-direction: column;
+    /* Los márgenes internos de los componentes se encargarán de la separación,
+       o podemos usar gap, pero para no romper el diseño actual lo dejamos así y 
+       los componentes mantienen sus margins. */
+}
+
 .panel-puja {
     background: var(--azul-oscuro);
     color: var(--texto-blanco);
     border-radius: 14px;
     padding: 24px;
     box-shadow: 0 10px 30px rgba(7, 28, 51, 0.18);
-    position: sticky;
-    top: 24px;
+}
+.panel-puja.hidden {
+    display: none !important;
 }
 
 .panel-puja__metricas {
@@ -657,14 +668,179 @@
     background: #fff7ed;
 }
 
+/* ── PANEL DE RESULTADO (Vistas 8 y 9) ── */
+.panel-resultado {
+    background: var(--azul-oscuro);
+    color: var(--texto-blanco);
+    border-radius: 14px;
+    padding: 32px 24px;
+    box-shadow: 0 10px 30px rgba(7, 28, 51, 0.18);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+}
+.panel-resultado.hidden { display: none; }
+
+.resultado-icono {
+    font-size: 3.5rem;
+    line-height: 1;
+}
+.resultado-icono--ganador { color: #f59e0b; }  /* dorado */
+.resultado-icono--desierto { color: #64748b; } /* gris */
+
+.resultado-titulo {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    margin: 0;
+}
+
+.resultado-monto {
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: var(--naranja);
+    letter-spacing: -1px;
+    margin: 0;
+}
+
+.resultado-ganador {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #94a3b8;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+.resultado-ganador i { color: #64748b; font-size: 1.1rem; }
+.resultado-ganador strong { color: var(--texto-blanco); }
+
+.resultado-separator {
+    width: 100%;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.resultado-fecha {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+.resultado-fecha i { font-size: 1rem; }
+
+.resultado-sin-pujas {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ── BANNER ANTI-SNIPING — naranja (Vista 7) ── */
+.banner-antisniping {
+    margin-top: 12px;
+    padding: 16px 20px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-left: 4px solid var(--naranja);
+    border-radius: var(--radio-sm);
+    color: #7c2d12;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    position: relative;
+}
+.banner-antisniping.hidden { display: none; }
+
+.banner-antisniping__icono {
+    font-size: 1.4rem;
+    color: var(--naranja);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.banner-antisniping__cuerpo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.banner-antisniping__titulo {
+    font-weight: 800;
+    font-size: 1rem;
+    color: #92400e;
+}
+.banner-antisniping__texto {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #78350f;
+}
+.banner-antisniping__tiempo {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #92400e;
+    margin-top: 4px;
+}
+.banner-antisniping__cerrar {
+    background: none;
+    border: none;
+    color: #92400e;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+}
+.banner-antisniping__cerrar:hover { opacity: 1; }
+
+/* ── Timer: label "Últimas segundos" ── */
+.metrica__label--critico {
+    color: #ff6b35 !important;
+    animation: pulse 1s infinite;
+}
+
+/* ── Historial vacío grande (Vista 9) ── */
+.historial-vacio-grande {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 48px 24px;
+    color: var(--texto-sec);
+    text-align: center;
+}
+.historial-vacio-grande i {
+    font-size: 3rem;
+    color: #cbd5e1;
+}
+.historial-vacio-grande p {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--texto-sec);
+    margin: 0;
+}
+.historial-vacio-grande span {
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
 /* RESPONSIVO SALA */
 @media (max-width: 1024px) {
     .sala-layout { grid-template-columns: 1fr; gap: 32px; }
-    .panel-puja { position: static; }
+    .sala-col-der { position: static; }
 }
 @media (max-width: 768px) {
     .sala-contenedor { padding-left: 16px; padding-right: 16px; }
     .sala-garantias { grid-template-columns: 1fr; gap: 12px; }
     .sala-header { flex-direction: column; align-items: flex-start; gap: 12px; }
     .sala-titulo { font-size: 1.8rem; }
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
 }
