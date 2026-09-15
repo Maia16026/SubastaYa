@@ -1,6 +1,6 @@
 // sala.js — Vista 2: Sala de Subasta en Vivo
 // Polling cada 3 segundos, temporizador, anti-sniping,
-// manejo de HTTP 201 / 400 / 409 y badge Liderando/Outbid
+// manejo de HTTP 201 / 400 / 409 y banner Liderando/Outbid
 
 import { obtenerSubastaPorId, obtenerPujas, realizarPuja } from "./api.js";
 import { obtenerUsuarioActivo } from "./app.js";
@@ -11,33 +11,45 @@ let estadoActual   = null;   // último SubastaDto recibido
 let fechaFinPrevia = null;   // para detectar extensión anti-sniping
 let intervaloPoll  = null;   // setInterval del polling (3 s)
 let intervaloTimer = null;   // setInterval del countdown (1 s)
-let imagenesGaleria = [];// Array de rutas de imágenes para el producto actual
+let imagenesGaleria = [];    // Array de rutas de imágenes para el producto actual
 let indiceImagen    = 0;     // Índice de la imagen que se muestra actualmente en la galería
+
+// Estado de participación en la sesión actual (no persiste entre recargas)
+// Solo se activa después de una puja exitosa en esta sesión.
+// NOTA: el backend anonimiza postores (Postor 1, 2...) sin exponer compradorId,
+// por lo que no podemos determinar el estado "liderando" leyendo los datos de la API.
+let estadoPostorSesion = "ninguno"; // "ninguno" | "lidera" | "outbid"
 
 // ── Nodos del DOM ──────────────────────────────────────────
 const tituloEl      = document.getElementById("sala-titulo");
 const badgeEstadoEl = document.getElementById("sala-badge-estado");
 const imgEl         = document.getElementById("sala-img");
 const catEl         = document.getElementById("sala-categoria");
-// Nodos de la galería de la sala
-const thumbsEl      = document.getElementById("sala-thumbs");      // Contenedor de miniaturas
-const counterEl     = document.getElementById("galeria-counter");  // Contador numérico (ej. 1/5)
-const prevBtn       = document.querySelector(".galeria-arrow--prev"); // Botón flecha izquierda
-const nextBtn       = document.querySelector(".galeria-arrow--next"); // Botón flecha derecha
+const thumbsEl      = document.getElementById("sala-thumbs");
+const counterEl     = document.getElementById("galeria-counter");
+const prevBtn       = document.querySelector(".galeria-arrow--prev");
+const nextBtn       = document.querySelector(".galeria-arrow--next");
 
 // Panel de puja
 const pujaActualEl  = document.getElementById("puja-actual-monto");
 const timerEl       = document.getElementById("sala-timer");
+const fechaFinEl    = document.getElementById("sala-fecha-fin");
 const ofertasEl     = document.getElementById("sala-ofertas");
 const incMinEl      = document.getElementById("sala-incremento");
 const proxPujaEl    = document.getElementById("puja-proxima");
 const btnPujaRapEl  = document.getElementById("btn-puja-rapida");
+const textoPujaRapEl = document.getElementById("texto-puja-rapida");
 const inputMontoEl  = document.getElementById("input-monto");
 const btnRealizarEl = document.getElementById("btn-realizar-puja");
-const badgePostorEl = document.getElementById("badge-postor");
+
+// Banner de estado del postor (nuevo, reemplaza badge-postor)
+const bannerPostorEl = document.getElementById("banner-postor");
+// Banner de éxito superior
+const bannerExitoEl  = document.getElementById("banner-exito");
 
 // Tabs y descripción
 const descEl        = document.getElementById("sala-descripcion");
+const caracEl       = document.getElementById("sala-caracteristicas");
 
 // Historial
 const historialEl   = document.getElementById("historial-body");
@@ -58,7 +70,7 @@ async function inicializar() {
     // Primera carga
     await refrescar();
 
-    // Polling cada 3 segundos (alternativa mínima aceptable según la cátedra)
+    // Polling cada 3 segundos
     intervaloPoll = setInterval(refrescar, 3000);
 
     // Listeners de la consola de puja
@@ -69,6 +81,23 @@ async function inicializar() {
     prevBtn?.addEventListener("click", () => cambiarImagen(-1));
     nextBtn?.addEventListener("click", () => cambiarImagen(1));
 
+    // Banner de éxito: botón cerrar
+    document.getElementById("btn-cerrar-banner")?.addEventListener("click", () => {
+        if (bannerExitoEl) bannerExitoEl.classList.add("hidden");
+    });
+
+    // resetear el estado del postor al cambiar de usuario.
+    // estadoPostorSesion es una variable en memoria ligada al usuario activo.
+    // Si no se resetea, un usuario que lideró seguirá mostrando "liderando"
+    // aunque ahora el usuario activo sea distinto.
+    window.addEventListener("usuarioCambiado", () => {
+        estadoPostorSesion = "ninguno";
+        if (bannerExitoEl) bannerExitoEl.classList.add("hidden");
+        // Forzar re-render del banner con el nuevo estado
+        if (estadoActual) actualizarBannerPostor(estadoActual);
+    });
+
+    // Favorito
     const favoritoBtn = document.querySelector(".sala-btn-fav");
     favoritoBtn?.addEventListener("click", () => {
         const icono = favoritoBtn.querySelector("i");
@@ -84,6 +113,7 @@ async function inicializar() {
             favoritoBtn.classList.add("favorito-activo");
         }
     });
+
     // Tabs de descripción
     document.querySelectorAll(".tab-btn").forEach(btn =>
         btn.addEventListener("click", () => cambiarTab(btn)));
@@ -235,6 +265,10 @@ function actualizarUI(s, pujas) {
     if (tituloEl)      tituloEl.textContent      = s.titulo;
     if (catEl)         catEl.textContent          = CATEGORIAS[s.categoriaId] ?? "Categoría";
     if (descEl)        descEl.textContent         = s.descripcion;
+    // Características: misma descripción hasta que el backend tenga un campo específico
+    if (caracEl && caracEl.querySelector("i")) {
+        // Mantener el texto genérico; no hardcodear datos
+    }
     if (imgEl) {
         imgEl.alt = s.titulo;
     }
@@ -254,6 +288,11 @@ function actualizarUI(s, pujas) {
     if (pujaActualEl) pujaActualEl.textContent = moneda(montoActual);
     if (ofertasEl)    ofertasEl.textContent    = `${s.cantidadPujas} oferta${s.cantidadPujas !== 1 ? "s" : ""}`;
 
+    // Fecha de finalización bajo el timer
+    if (fechaFinEl && s.fechaFin) {
+        fechaFinEl.textContent = formatFechaCorta(s.fechaFin);
+    }
+
     // Próxima puja e incremento mínimo
     const proxMonto = montoActual + s.incrementoMinimo;
     if (incMinEl)    incMinEl.textContent   = moneda(s.incrementoMinimo);
@@ -261,7 +300,7 @@ function actualizarUI(s, pujas) {
 
     // Botón de puja rápida
     if (btnPujaRapEl) {
-        btnPujaRapEl.textContent   = `PUJAR ${moneda(proxMonto)}`;
+        if (textoPujaRapEl) textoPujaRapEl.textContent = `PUJAR ${moneda(proxMonto)}`;
         btnPujaRapEl.dataset.monto = proxMonto;
         const activa = s.estado === "ACTIVA";
         btnPujaRapEl.disabled      = !activa;
@@ -269,8 +308,8 @@ function actualizarUI(s, pujas) {
         if (inputMontoEl)  inputMontoEl.disabled  = !activa;
     }
 
-    // Badge de postor (Liderando / Outbid)
-    actualizarBadgePostor(s, pujas);
+    // Banner de estado del postor (basado en la sesión actual)
+    actualizarBannerPostor(s);
 
     // Historial de pujas
     renderizarHistorial(pujas);
@@ -339,58 +378,60 @@ function actualizarTimer(fechaFin, estado) {
     }
 }
 
-// BADGE POSTOR: Liderando / Outbid / Sin participar
-function actualizarBadgePostor(s, pujas) {
+// BANNER POSTOR: muestra el estado dentro de la sesión actual
+// (no persiste entre recargas; el backend no expone compradorId en las pujas)
+function actualizarBannerPostor(s) {
+    if (!bannerPostorEl) return;
 
-    if (!badgePostorEl) return;
-
-    const usuario = obtenerUsuarioActivo();
-
-    if (!usuario) {
-        badgePostorEl.className = "badge-postor hidden";
+    // Si la subasta no está activa, mostrar banner neutral
+    if (s.estado !== "ACTIVA") {
+        bannerPostorEl.className = "banner-estado banner-estado--info";
+        bannerPostorEl.innerHTML = `
+            <i class="fa-solid fa-circle-check"></i>
+            <div class="banner-estado__textos">
+                <strong>Subasta finalizada</strong>
+                <span>Esta subasta ya no admite nuevas ofertas.</span>
+            </div>`;
         return;
     }
 
-    const lideraId =
-        sessionStorage.getItem(`lidera-${subastaId}`);
+    // Si el usuario activo es el vendedor de esta subasta, no puede pujar
+    const usuarioActivo = obtenerUsuarioActivo();
+    if (usuarioActivo && s.vendedorId && usuarioActivo.id === s.vendedorId) {
+        bannerPostorEl.className = "banner-estado banner-estado--info";
+        bannerPostorEl.innerHTML = `
+            <i class="fa-solid fa-circle-info"></i>
+            <div class="banner-estado__textos">
+                <strong>Sos el vendedor de esta subasta</strong>
+                <span>No podés realizar pujas en tu propia subasta.</span>
+            </div>`;
+        return;
+    }
 
-    const participo =
-        sessionStorage.getItem(`participo-${subastaId}`) === "true";
-
-    if (lideraId && parseInt(lideraId) === usuario.id) {
-
-        badgePostorEl.className =
-            "badge-postor badge-postor--lidera";
-
-        badgePostorEl.innerHTML = `
+    if (estadoPostorSesion === "lidera") {
+        bannerPostorEl.className = "banner-estado banner-estado--lidera";
+        bannerPostorEl.innerHTML = `
             <i class="fa-solid fa-trophy"></i>
-
-            <div class="badge-postor-textos">
+            <div class="banner-estado__textos">
                 <strong>Estás liderando la subasta</strong>
                 <span>Tu oferta actual es la más alta.</span>
-            </div>
-        `;
-
-    }
-    else if (participo) {
-
-        badgePostorEl.className =
-            "badge-postor badge-postor--outbid";
-
-        badgePostorEl.innerHTML = `
+            </div>`;
+    } else if (estadoPostorSesion === "outbid") {
+        bannerPostorEl.className = "banner-estado banner-estado--outbid";
+        bannerPostorEl.innerHTML = `
             <i class="fa-solid fa-circle-exclamation"></i>
-
-            <div class="badge-postor-textos">
+            <div class="banner-estado__textos">
                 <strong>¡Fuiste superado!</strong>
                 <span>Otro postor ofreció más que vos.</span>
-            </div>
-        `;
-
-    }
-    else {
-
-        badgePostorEl.className =
-            "badge-postor hidden";
+            </div>`;
+    } else {
+        bannerPostorEl.className = "banner-estado banner-estado--info";
+        bannerPostorEl.innerHTML = `
+            <i class="fa-solid fa-circle-info"></i>
+            <div class="banner-estado__textos">
+                <strong>Aún no realizaste ofertas</strong>
+                <span>Sé el primero en pujar y comenzá a participar.</span>
+            </div>`;
     }
 }
 
@@ -415,49 +456,41 @@ async function enviarPuja(monto) {
     const usuario = obtenerUsuarioActivo();
     if (!usuario) { mostrarToast("Seleccioná un usuario activo.", "error"); return; }
 
-    // Deshabilitar botones mientras procesa
+    // Estado visual: PROCESANDO
     setBotonsPuja(true);
+
+    // Guardar el estado previo para poder restaurarlo si falla
+    const estadoAnterior = estadoPostorSesion;
 
     try {
         await realizarPuja(subastaId, usuario.id, monto);
 
-        // 201 — Éxito
-        mostrarToast("¡Puja registrada con éxito!", "exito");
-        sessionStorage.setItem(`lidera-${subastaId}`, usuario.id);
-        sessionStorage.setItem(`participo-${subastaId}`, "true");
+        // 201 — Éxito: actualizar estado en memoria y mostrar banner superior
+        estadoPostorSesion = "lidera";
         if (inputMontoEl) inputMontoEl.value = "";
+
+        // Mostrar banner de éxito superior
+        if (bannerExitoEl) {
+            bannerExitoEl.classList.remove("hidden");
+            setTimeout(() => bannerExitoEl.classList.add("hidden"), 5000);
+        }
 
         // Refrescar inmediatamente sin esperar el polling
         await refrescar();
 
     } catch (err) {
-        // err puede ser { tipo, mensaje } (lanzado por api.js) o un Error nativo
         const tipo    = err.tipo    ?? "ERROR";
         const mensaje = err.mensaje ?? err.message ?? "Error al registrar la puja.";
 
         if (tipo === "CONCURRENCIA") {
-
+            // 409: alguien pujó antes. Si liderábamos, perdimos el liderazgo.
             mostrarToast(mensaje, "warn");
-
-            sessionStorage.setItem(
-                `participo-${subastaId}`,
-                "true"
-            );
-
-            sessionStorage.removeItem(
-                `lidera-${subastaId}`
-            );
-
-        }
-        else if (tipo === "NEGOCIO") {
-
+            estadoPostorSesion = estadoAnterior === "lidera" ? "outbid" : estadoAnterior;
+        } else {
+            // 400 (saldo, monto bajo, vendedor pujando, etc.) u otro error:
+            // NO modificar estadoPostorSesion — la puja falló, el estado del
+            // usuario activo no cambió respecto a esta subasta.
             mostrarToast(mensaje, "error");
-
-        }
-        else {
-
-            mostrarToast(mensaje, "error");
-
         }
 
         await refrescar();
@@ -466,9 +499,26 @@ async function enviarPuja(monto) {
     }
 }
 
-function setBotonsPuja(deshabilitado) {
-    if (btnPujaRapEl)  btnPujaRapEl.disabled  = deshabilitado;
-    if (btnRealizarEl) btnRealizarEl.disabled  = deshabilitado;
+function setBotonsPuja(procesando) {
+    if (btnPujaRapEl) {
+        btnPujaRapEl.disabled = procesando;
+        if (procesando) {
+            btnPujaRapEl.classList.add("btn-puja-rapida--procesando");
+            if (textoPujaRapEl) textoPujaRapEl.textContent = "PROCESANDO...";
+        } else {
+            btnPujaRapEl.classList.remove("btn-puja-rapida--procesando");
+            // El texto se restaura en el siguiente actualizarUI via polling
+        }
+    }
+    if (btnRealizarEl) btnRealizarEl.disabled = procesando;
+}
+
+function formatFechaCorta(iso) {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    const dia  = d.toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" });
+    const hora = d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+    return `${dia} · ${hora} hs`;
 }
 
 // HISTORIAL DE PUJAS
