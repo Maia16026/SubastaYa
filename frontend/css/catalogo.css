@@ -2,7 +2,7 @@
 
 /* BANNER PRINCIPAL */
 .hero {
-    background: linear-gradient( 120deg, var(--navy-dark), var(--navy) );
+    background: #021f3f;
     color: var(--white);
     border-radius: var(--radius);
     padding: 35px;
@@ -48,8 +48,22 @@
     object-fit: cover;
     object-position: right center;
     display: block;
-    -webkit-mask-image: linear-gradient( to right, transparent 0%, rgba(0, 0, 0, 0.35) 15%, black 35%, black 100% );
-    mask-image: linear-gradient( to right, transparent 0%, rgba(0, 0, 0, 0.35) 15%, black 35%, black 100% );
+
+    -webkit-mask-image: linear-gradient(
+        to right,
+        transparent 0%,
+        rgba(0, 0, 0, 0.25) 12%,
+        black 32%,
+        black 100%
+    );
+
+    mask-image: linear-gradient(
+        to right,
+        transparent 0%,
+        rgba(0, 0, 0, 0.25) 12%,
+        black 32%,
+        black 100%
+    );
 }
 
 /*CATEGORÍAS */
@@ -139,30 +153,38 @@
     height: 100%;
     background-color: var(--white);
     border: 1px solid #e1e8ef;
-    border-radius: var(--radius);
+    border-radius: 14px;
     overflow: hidden;
-    box-shadow: var(--shadow);
+    box-shadow: 0 3px 12px rgba(11, 37, 69, 0.08);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
 }
+
 .auction-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 7px 18px rgba(11, 37, 69, 0.12);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(11, 37, 69, 0.14);
 }
 .auction-image {
     position: relative;
     width: 100%;
-    height: 190px;
+    height: 210px;
     background-color: #f7f9fb;
     overflow: hidden;
 }
+
 .product-image {
     width: 100%;
-    height: 190px;
+    height: 100%;
     object-fit: cover;
+    object-position: center;
     display: block;
     background-color: #f7f9fb;
+    transition: transform 0.3s ease;
+}
+
+.auction-card:hover .product-image {
+    transform: scale(1.03);
 }
 .favorite-button {
     position: absolute;
@@ -190,28 +212,31 @@
     position: absolute;
     left: 12px;
     bottom: 10px;
-    padding: 4px 8px;
-    border-radius: 5px;
+    padding: 5px 10px;
+    border-radius: 6px;
     color: var(--white);
-    font-size: 0.65rem;
-    font-weight: 700;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
 }
 .active-status { background-color: var(--green); }
 .upcoming-status { background-color: var(--blue); }
 .finished-status { background-color: var(--gray); }
 
 .auction-content {
-    padding: 15px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
     flex: 1;
 }
 .auction-content h3 {
     margin-top: 0;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
     color: var(--navy);
     font-size: 1rem;
-    font-weight: 700;
+    font-weight: 800;
+    line-height: 1.25;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -271,4 +296,34 @@
     .hero-search .btn { min-height: 43px; }
     .hero-image { margin-top: 20px; }
     .hero-banner-image { height: 130px; }
+}
+.countdown {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.countdown--critico {
+    color: #ef4444;
+    font-weight: 800;
+    animation: pulsoCountdown 1s infinite;
+}
+
+.countdown--warn {
+    color: #f59e0b;
+    font-weight: 800;
+}
+
+.countdown--inactivo {
+    color: var(--muted);
+    font-weight: 600;
+}
+
+@keyframes pulsoCountdown {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.55;
+    }
 }

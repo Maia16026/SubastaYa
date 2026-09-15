@@ -11,12 +11,19 @@ let estadoActual   = null;   // último SubastaDto recibido
 let fechaFinPrevia = null;   // para detectar extensión anti-sniping
 let intervaloPoll  = null;   // setInterval del polling (3 s)
 let intervaloTimer = null;   // setInterval del countdown (1 s)
+let imagenesGaleria = [];// Array de rutas de imágenes para el producto actual
+let indiceImagen    = 0;     // Índice de la imagen que se muestra actualmente en la galería
 
 // ── Nodos del DOM ──────────────────────────────────────────
 const tituloEl      = document.getElementById("sala-titulo");
 const badgeEstadoEl = document.getElementById("sala-badge-estado");
 const imgEl         = document.getElementById("sala-img");
 const catEl         = document.getElementById("sala-categoria");
+// Nodos de la galería de la sala
+const thumbsEl      = document.getElementById("sala-thumbs");      // Contenedor de miniaturas
+const counterEl     = document.getElementById("galeria-counter");  // Contador numérico (ej. 1/5)
+const prevBtn       = document.querySelector(".galeria-arrow--prev"); // Botón flecha izquierda
+const nextBtn       = document.querySelector(".galeria-arrow--next"); // Botón flecha derecha
 
 // Panel de puja
 const pujaActualEl  = document.getElementById("puja-actual-monto");
@@ -59,7 +66,24 @@ async function inicializar() {
     btnRealizarEl?.addEventListener("click",   enviarPujaManual);
     btnVerTodasEl?.addEventListener("click",   toggleVerTodas);
     inputMontoEl?.addEventListener("keydown", e => { if (e.key === "Enter") enviarPujaManual(); });
+    prevBtn?.addEventListener("click", () => cambiarImagen(-1));
+    nextBtn?.addEventListener("click", () => cambiarImagen(1));
 
+    const favoritoBtn = document.querySelector(".sala-btn-fav");
+    favoritoBtn?.addEventListener("click", () => {
+        const icono = favoritoBtn.querySelector("i");
+        if (!icono) return;
+        const activo = icono.classList.contains("fa-solid");
+        if (activo) {
+            icono.classList.remove("fa-solid");
+            icono.classList.add("fa-regular");
+            favoritoBtn.classList.remove("favorito-activo");
+        } else {
+            icono.classList.remove("fa-regular");
+            icono.classList.add("fa-solid");
+            favoritoBtn.classList.add("favorito-activo");
+        }
+    });
     // Tabs de descripción
     document.querySelectorAll(".tab-btn").forEach(btn =>
         btn.addEventListener("click", () => cambiarTab(btn)));
@@ -89,7 +113,120 @@ async function refrescar() {
         console.error("Error al refrescar la sala:", err);
     }
 }
+function obtenerImagenProducto(subasta) {
 
+    if (subasta.urlImagen?.startsWith("http")) {
+        return subasta.urlImagen;
+    }
+
+    const imagenesSeed = {
+        "/images/phone.png": "assets/img/celular.jpg",
+        "/images/critical.png": "assets/img/notebook.jpg",
+        "/images/collectible.png": "assets/img/reloj.webp",
+        "/images/jacket.png": "assets/img/zapatillas.jpg",
+        "/images/car.png": "assets/img/tv.jpg"
+    };
+
+    if (imagenesSeed[subasta.urlImagen]) {
+        return imagenesSeed[subasta.urlImagen];
+    }
+
+    if (subasta.urlImagen) {
+        const nombreArchivo = subasta.urlImagen.split("/").pop();
+        return `assets/img/${nombreArchivo}`;
+    }
+
+    return "assets/img/notebook.jpg";
+}
+function inicializarGaleria(s) {
+    const imagenPrincipal = obtenerImagenProducto(s);
+
+    // Por ahora, el reloj es el único producto con galería completa.
+    if (s.urlImagen?.includes("collectible")) {
+        imagenesGaleria = [
+            imagenPrincipal,
+            "assets/img/reloj2.webp",
+            "assets/img/reloj3.webp",
+            "assets/img/reloj4.webp",
+            "assets/img/reloj5.webp"
+        ];
+    } else {
+        imagenesGaleria = [imagenPrincipal];
+    }
+
+    indiceImagen = 0;
+    renderizarGaleria();
+}
+function renderizarGaleria() {
+
+    if (!imgEl || !thumbsEl) return;
+
+    if (imagenesGaleria.length === 0) {
+        imagenesGaleria = ["assets/img/notebook.jpg"];
+    }
+
+    imgEl.src = imagenesGaleria[indiceImagen];
+
+    if (counterEl) {
+        counterEl.textContent =
+            `${indiceImagen + 1}/${imagenesGaleria.length}`;
+    }
+
+    thumbsEl.innerHTML = imagenesGaleria.map((imagen, indice) => `
+        <button
+            type="button"
+            class="thumb-wrap ${indice === indiceImagen ? "activo" : ""}"
+            data-indice="${indice}"
+            aria-label="Ver imagen ${indice + 1}"
+        >
+            <img
+                src="${imagen}"
+                class="thumb-img"
+                alt="Vista ${indice + 1}"
+            >
+        </button>
+    `).join("");
+
+    thumbsEl.querySelectorAll(".thumb-wrap").forEach(btn => {
+
+        btn.addEventListener("click", () => {
+
+            indiceImagen = Number(btn.dataset.indice);
+
+            renderizarGaleria();
+        });
+    });
+
+    actualizarFlechasGaleria();
+}
+function actualizarFlechasGaleria() {
+
+    if (!prevBtn || !nextBtn) return;
+
+    const hayVariasImagenes = imagenesGaleria.length > 1;
+
+    prevBtn.disabled = !hayVariasImagenes;
+    nextBtn.disabled = !hayVariasImagenes;
+
+    prevBtn.style.opacity = hayVariasImagenes ? "1" : "0.5";
+    nextBtn.style.opacity = hayVariasImagenes ? "1" : "0.5";
+}
+function cambiarImagen(direccion) {
+
+    if (imagenesGaleria.length <= 1) return;
+
+    indiceImagen += direccion;
+
+    if (indiceImagen < 0) {
+        indiceImagen = imagenesGaleria.length - 1;
+    }
+
+    if (indiceImagen >= imagenesGaleria.length) {
+        indiceImagen = 0;
+    }
+
+    renderizarGaleria();
+}
 // ACTUALIZAR UI completa con los datos frescos
 function actualizarUI(s, pujas) {
     const CATEGORIAS = { 1:"Tecnología", 2:"Coleccionables", 3:"Indumentaria", 4:"Vehículos" };
@@ -99,10 +236,11 @@ function actualizarUI(s, pujas) {
     if (catEl)         catEl.textContent          = CATEGORIAS[s.categoriaId] ?? "Categoría";
     if (descEl)        descEl.textContent         = s.descripcion;
     if (imgEl) {
-        imgEl.src = s.urlImagen?.startsWith("http")
-            ? s.urlImagen
-            : `https://placehold.co/640x400/1e3a5f/ffffff?text=${encodeURIComponent(s.titulo)}`;
         imgEl.alt = s.titulo;
+    }
+
+    if (imagenesGaleria.length === 0) {
+        inicializarGaleria(s);
     }
 
     // Badge de estado
@@ -148,56 +286,111 @@ function actualizarUI(s, pujas) {
 function actualizarTimer(fechaFin, estado) {
     if (!timerEl) return;
 
-    if (estado !== "ACTIVA") {
+    // Subasta todavía no comenzó
+    if (estado === "PROGRAMADA") {
+        const inicio = estadoActual?.fechaInicio;
+
+        if (!inicio) {
+            timerEl.textContent = "Próximamente";
+            timerEl.className = "sala-timer sala-timer--warn";
+            return;
+        }
+
+        const restanMs = new Date(inicio).getTime() - Date.now();
+
+        if (restanMs <= 0) {
+            timerEl.textContent = "Iniciando...";
+            timerEl.className = "sala-timer sala-timer--warn";
+            return;
+        }
+
+        timerEl.textContent = `Inicia en ${msTiempo(restanMs)}`;
+        timerEl.className = "sala-timer sala-timer--warn";
+        return;
+    }
+
+    // Subasta finalizada o desierta
+    if (estado === "FINALIZADA" || estado === "DESIERTA") {
         timerEl.textContent = "Finalizada";
-        timerEl.className   = "sala-timer sala-timer--inactivo";
+        timerEl.className = "sala-timer sala-timer--inactivo";
         detenerPolling();
         return;
     }
 
+    // Subasta activa
     const restanMs = new Date(fechaFin).getTime() - Date.now();
 
     if (restanMs <= 0) {
         timerEl.textContent = "00:00:00";
-        timerEl.className   = "sala-timer sala-timer--critico";
+        timerEl.className = "sala-timer sala-timer--critico";
         return;
     }
 
     timerEl.textContent = msTiempo(restanMs);
 
-    if      (restanMs < 60_000)  timerEl.className = "sala-timer sala-timer--critico";
-    else if (restanMs < 120_000) timerEl.className = "sala-timer sala-timer--warn";
-    else                         timerEl.className = "sala-timer";
+    if (restanMs < 60_000) {
+        timerEl.className = "sala-timer sala-timer--critico";
+    }
+    else if (restanMs < 120_000) {
+        timerEl.className = "sala-timer sala-timer--warn";
+    }
+    else {
+        timerEl.className = "sala-timer";
+    }
 }
 
 // BADGE POSTOR: Liderando / Outbid / Sin participar
 function actualizarBadgePostor(s, pujas) {
+
     if (!badgePostorEl) return;
 
     const usuario = obtenerUsuarioActivo();
-    if (!usuario) { badgePostorEl.className = "badge-postor hidden"; return; }
 
-    // Verificar si el usuario participó
-    const participó = pujas.some(p => p.seudonimo?.includes(`Postor`) || false);
-    // El historial viene con seudónimos — para determinar si lidera
-    // comparamos el compradorId de la puja más alta con el usuario activo
-    // El backend devuelve el seudonimo, no el compradorId, así que usamos el SubastaDto
-    // Nota: el backend expone compradorLiderId si se agrega al DTO — por ahora
-    // usamos una heurística: si cantidadPujas > 0 y la primer puja del historial
-    // tiene posición 1, verificamos via la lógica de negocio.
+    if (!usuario) {
+        badgePostorEl.className = "badge-postor hidden";
+        return;
+    }
 
-    // Estrategia robusta: si la UI recibe la puja recién registrada, sabemos que ese
-    // usuario lidera. Lo guardamos en sessionStorage al hacer una puja exitosa.
-    const lideraId = sessionStorage.getItem(`lidera-${subastaId}`);
+    const lideraId =
+        sessionStorage.getItem(`lidera-${subastaId}`);
+
+    const participo =
+        sessionStorage.getItem(`participo-${subastaId}`) === "true";
 
     if (lideraId && parseInt(lideraId) === usuario.id) {
-        badgePostorEl.className   = "badge-postor badge-postor--lidera";
-        badgePostorEl.innerHTML   = `<i class="fa-solid fa-trophy"></i> Estás liderando la subasta <span>Tu oferta actual es la más alta.</span>`;
-    } else if (sessionStorage.getItem(`participo-${subastaId}`) === "true") {
-        badgePostorEl.className   = "badge-postor badge-postor--outbid";
-        badgePostorEl.innerHTML   = `<i class="fa-solid fa-circle-exclamation"></i> ¡Fuiste superado (Outbid)! <span>Otro postor ofreció más que vos.</span>`;
-    } else {
-        badgePostorEl.className   = "badge-postor hidden";
+
+        badgePostorEl.className =
+            "badge-postor badge-postor--lidera";
+
+        badgePostorEl.innerHTML = `
+            <i class="fa-solid fa-trophy"></i>
+
+            <div class="badge-postor-textos">
+                <strong>Estás liderando la subasta</strong>
+                <span>Tu oferta actual es la más alta.</span>
+            </div>
+        `;
+
+    }
+    else if (participo) {
+
+        badgePostorEl.className =
+            "badge-postor badge-postor--outbid";
+
+        badgePostorEl.innerHTML = `
+            <i class="fa-solid fa-circle-exclamation"></i>
+
+            <div class="badge-postor-textos">
+                <strong>¡Fuiste superado!</strong>
+                <span>Otro postor ofreció más que vos.</span>
+            </div>
+        `;
+
+    }
+    else {
+
+        badgePostorEl.className =
+            "badge-postor hidden";
     }
 }
 
@@ -243,16 +436,16 @@ async function enviarPuja(monto) {
         const mensaje = err.mensaje ?? err.message ?? "Error al registrar la puja.";
 
         if (tipo === "CONCURRENCIA") {
-            // 409 Conflict — Optimistic Locking
-            mostrarToast(`⚡ ${mensaje}`, "warn");
-            sessionStorage.setItem(`participo-${subastaId}`, "true");
-            // Limpiar liderazgo: alguien más ganó
-            sessionStorage.removeItem(`lidera-${subastaId}`);
-        } else if (tipo === "NEGOCIO") {
-            // 400 Bad Request — validación de negocio
-            mostrarToast(`${mensaje}`, "error");
-        } else {
-            mostrarToast("Error inesperado. Intentá de nuevo.", "error");
+            mostrarToast(mensaje, "warn");
+
+            sessionStorage.setItem(
+                `participo-${subastaId}`,
+                "true"
+            );
+
+            sessionStorage.removeItem(
+                `lidera-${subastaId}`
+            );
         }
 
         await refrescar();
@@ -324,7 +517,7 @@ function mostrarToast(mensaje, tipo = "info") {
     };
 
     const toast = document.createElement("div");
-    toast.className = "toast";
+    toast.className = "sala-toast";
     toast.style.borderLeftColor = colores[tipo] ?? colores.info;
     toast.innerHTML = `
         <i class="fa-solid ${iconos[tipo] ?? iconos.info}" style="color:${colores[tipo] ?? colores.info}"></i>
@@ -333,11 +526,10 @@ function mostrarToast(mensaje, tipo = "info") {
     document.getElementById("toast-container")?.appendChild(toast);
 
     // Animar entrada
-    requestAnimationFrame(() => toast.classList.add("toast--visible"));
-
+    requestAnimationFrame(() => toast.classList.add("sala-toast--visible"));
     // Remover a los 4 segundos
     setTimeout(() => {
-        toast.classList.remove("toast--visible");
+        toast.classList.remove("sala-toast--visible");
         toast.addEventListener("transitionend", () => toast.remove());
     }, 4000);
 }

@@ -28,11 +28,8 @@
         <nav class="navbar navbar-expand-lg">
             <div class="container">
                 <!-- Logo -->
-                <a class="navbar-brand d-flex flex-column" href="index.html">
-                    <span class="h4 mb-0">
-                        <span class="logo-subasta">Subasta</span><span class="logo-ya">Ya</span>
-                    </span>
-                    <small>OFERTÁ PARA GANAR</small>
+                <a class="navbar-brand" href="index.html">
+                    <img src="assets/img/logo.png" alt="SubastaYa" class="logo-imagen">
                 </a>
 
                 <!-- Botón menú celular -->
@@ -99,36 +96,52 @@
         <!-- COLUMNA IZQUIERDA: imagen + tabs + garantías -->
         <div class="sala-col-izq">
 
-            <!-- Galería de Imágenes -->
+            <!-- Galería de imágenes -->
             <div class="sala-galeria">
+
+                <!-- Imagen principal -->
                 <div class="sala-galeria__main">
+
                     <img
                         id="sala-img"
-                        src="https://placehold.co/640x400/1e3a5f/ffffff?text=Cargando..."
+                        src="assets/img/notebook.jpg"
                         alt="Imagen de la subasta"
                         class="sala-img-principal"
                     />
-                    <button class="galeria-arrow galeria-arrow--prev"><i class="fa-solid fa-chevron-left"></i></button>
-                    <button class="galeria-arrow galeria-arrow--next"><i class="fa-solid fa-chevron-right"></i></button>
-                    <span class="galeria-counter">1/5</span>
+
+                    <button
+                        type="button"
+                        class="galeria-arrow galeria-arrow--prev"
+                        id="galeria-prev"
+                        aria-label="Imagen anterior"
+                    >
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="galeria-arrow galeria-arrow--next"
+                        id="galeria-next"
+                        aria-label="Imagen siguiente"
+                    >
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+
+                    <span
+                        class="galeria-counter"
+                        id="galeria-counter"
+                    >
+                        1/1
+                    </span>
+
                 </div>
-                <div class="sala-galeria__thumbs">
-                    <div class="thumb-wrap activo">
-                        <img src="https://placehold.co/100x100/1e3a5f/ffffff?text=1" class="thumb-img" alt="Miniatura 1" />
-                    </div>
-                    <div class="thumb-wrap">
-                        <img src="https://placehold.co/100x100/1e3a5f/ffffff?text=2" class="thumb-img" alt="Miniatura 2" />
-                    </div>
-                    <div class="thumb-wrap">
-                        <img src="https://placehold.co/100x100/1e3a5f/ffffff?text=3" class="thumb-img" alt="Miniatura 3" />
-                    </div>
-                    <div class="thumb-wrap">
-                        <img src="https://placehold.co/100x100/1e3a5f/ffffff?text=4" class="thumb-img" alt="Miniatura 4" />
-                    </div>
-                    <div class="thumb-wrap">
-                        <img src="https://placehold.co/100x100/1e3a5f/ffffff?text=5" class="thumb-img" alt="Miniatura 5" />
-                    </div>
-                </div>
+
+                <!-- Miniaturas generadas por sala.js -->
+                <div
+                    class="sala-galeria__thumbs"
+                    id="sala-thumbs"
+                ></div>
+
             </div>
 
             <!-- Tabs de información -->
@@ -193,7 +206,7 @@
                     </div>
                     <div class="metrica metrica--timer">
                         <span class="metrica__label">
-                            <i class="fa-regular fa-clock"></i> Finaliza en
+                            <i class="fa-regular fa-clock"></i> Tiempo
                         </span>
                         <span class="sala-timer" id="sala-timer">--:--:--</span>
                     </div>
