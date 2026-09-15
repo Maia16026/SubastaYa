@@ -1,0 +1,169 @@
+/* styles.css - COLORES PRINCIPALES Y BASE */
+
+:root {
+    --navy: #0b2545;
+    --navy-dark: #071c33;
+    --orange: #ff7a00;
+    --orange-hover: #e96f00;
+    --light-bg: #f4f8fc;
+    --white: #ffffff;
+    --text: #152536;
+    --muted: #6c757d;
+    --green: #24a148;
+    --blue: #168aad;
+    --gray: #7a838c;
+    --border: #dce4ed;
+    --radius: 12px;
+    --shadow: 0 4px 15px rgba(11, 37, 69, 0.08);
+
+    /* Mapeo para retrocompatibilidad con sala.css */
+    --azul-oscuro: var(--navy);
+    --azul-medio: #1e3a5f;
+    --azul-claro: var(--blue);
+    --naranja: var(--orange);
+    --naranja-hover: var(--orange-hover);
+    --bg-body: var(--light-bg);
+    --bg-card: var(--white);
+    --texto: var(--text);
+    --texto-sec: var(--muted);
+    --texto-blanco: var(--white);
+    --borde: var(--border);
+    --max-ancho: 1200px;
+    --radio-sm: 6px;
+    --radio-md: var(--radius);
+    --radio-lg: 16px;
+    --sombra-sm: 0 1px 4px rgba(0,0,0,.08);
+    --sombra-lg: var(--shadow);
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background-color: var(--light-bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+main { flex: 1; }
+
+/*  HEADER / NAVBAR */
+header {
+    background-color: var(--navy);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+.navbar {
+    background-color: var(--navy);
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+.navbar-brand {
+    text-decoration: none;
+}
+.logo-subasta {
+    color: var(--white);
+    font-weight: 800;
+}
+.logo-ya {
+    color: var(--orange);
+    font-weight: 800;
+}
+.navbar-brand small {
+    color: #b7c4d3;
+    font-size: 0.65rem;
+    letter-spacing: 0.4px;
+}
+.navbar .nav-link {
+    color: var(--white);
+    font-size: 0.95rem;
+    margin-left: 12px;
+    position: relative;
+}
+.navbar .nav-link:hover { color: var(--orange); }
+.navbar .nav-link.active { color: var(--orange); font-weight: 600; }
+.navbar .nav-link.active::after {
+    content: "";
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 0;
+    height: 2px;
+    background-color: var(--orange);
+    border-radius: 2px;
+}
+.navbar-toggler { border-color: rgba(255, 255, 255, 0.35); }
+.navbar-toggler:focus { box-shadow: none; }
+.navbar-toggler-icon { filter: invert(1); }
+
+/* Custom: Selector de usuario */
+.selector-usuario {
+    background: var(--navy-dark);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    border-radius: var(--radio-sm);
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    outline: none;
+    cursor: pointer;
+    margin-right: 12px;
+}
+.selector-usuario option { background: var(--navy); }
+
+/*FOOTER*/
+footer {
+    background-color: var(--navy-dark);
+    color: var(--white);
+    padding-top: 22px;
+    padding-bottom: 22px;
+}
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.footer-content > div {
+    display: flex;
+    flex-direction: column;
+}
+.footer-subasta { color: var(--white); }
+.footer-ya { color: var(--orange); }
+.footer-content small { color: #b7c4d3; font-size: 0.6rem; }
+.footer-content p { margin: 0; color: #b7c4d3; font-size: 0.75rem; }
+@media (max-width: 575.98px) {
+    .footer-content { flex-direction: column; gap: 12px; text-align: center; }
+}
+
+/* GLOBAL UTILITIES (Spinner, Estado Vacío) */
+.spinner-wrap {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 80px;
+    flex: 1;
+}
+.spinner-wrap.visible { display: flex; }
+.spinner {
+    width: 48px; height: 48px;
+    border: 4px solid var(--border);
+    border-top-color: var(--orange);
+    border-radius: 50%;
+    animation: girar .75s linear infinite;
+}
+@keyframes girar { to { transform: rotate(360deg); } }
+
+.estado-vacio {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 80px 32px;
+    text-align: center;
+    flex: 1;
+}
+.estado-vacio.visible   { display: flex; }
+.estado-vacio__icon     { font-size: 4rem; color: #d1d5db; }
+.estado-vacio__titulo   { font-size: 1.4rem; font-weight: 800; color: var(--navy); }
+.estado-vacio__desc     { color: var(--muted); max-width: 340px; line-height: 1.5; }
