@@ -51,7 +51,18 @@ public class ObtenerPujasPorCompradorHandler
                 ahora >= subasta.FechaInicio &&
                 ahora <= subasta.FechaFin;
 
-            // 8. Determinar Gano
+            // 8. Calcular Liderando: la puja con mayor monto de la subasta pertenece al comprador consultado
+            bool liderando = false;
+            if (subasta.Pujas != null && subasta.Pujas.Any())
+            {
+                var pujaLider = subasta.Pujas
+                    .OrderByDescending(p => p.Monto)
+                    .First();
+
+                liderando = pujaLider.CompradorId == query.CompradorId;
+            }
+
+            // 9. Determinar Gano (solo relevante cuando la subasta terminó)
             bool? gano = null;
 
             if (subasta.Estado == EstadoSubasta.FINALIZADA)
@@ -74,12 +85,13 @@ public class ObtenerPujasPorCompradorHandler
                 gano = false;
             }
 
-            // 9. Agregar el DTO
+            // 10. Agregar el DTO
             resultado.Add(new ActividadCompradorDto
             {
                 SubastaId = subasta.Id,
                 Titulo = subasta.Titulo,
                 SigueAbierta = sigueAbierta,
+                Liderando = liderando,
                 Gano = gano
             });
         }
