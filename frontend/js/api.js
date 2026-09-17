@@ -193,3 +193,38 @@ export async function crearSubasta(datosSubasta) {
 
     return respuesta.json();
 }
+
+// =========================================================
+// MIS ACTIVIDADES
+// =========================================================
+
+/**
+ * Obtiene las subastas en las que participó un comprador.
+ * La API devuelve ActividadCompradorDto:
+ * { subastaId, titulo, sigueAbierta, gano }
+ */
+export async function obtenerPujasPorComprador(compradorId) {
+    const respuesta = await fetch(`${API_URL}/compradores/${compradorId}/pujas`);
+
+    if (!respuesta.ok) {
+        throw new Error(`Error al obtener las actividades del comprador: HTTP ${respuesta.status}`);
+    }
+
+    return respuesta.json();
+}
+
+/**
+ * Obtiene las subastas publicadas por un vendedor.
+ * La API devuelve PublicacionVendedorDto:
+ * { subastaId, titulo, estado, pujaActual,
+ *   cantidadPujas, montoAdjudicado, estadoAdjudicacion }
+ */
+export async function obtenerSubastasPorVendedor(vendedorId) {
+    const respuesta = await fetch(`${API_URL}/vendedores/${vendedorId}/subastas`);
+
+    if (!respuesta.ok) {
+        throw new Error(`Error al obtener las publicaciones del vendedor: HTTP ${respuesta.status}`);
+    }
+
+    return respuesta.json();
+}
