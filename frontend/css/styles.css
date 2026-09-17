@@ -1,7 +1,7 @@
 /* styles.css - COLORES PRINCIPALES Y BASE */
 
 :root {
-    --navy: #0b2545;
+    --navy: #0e1f33;
     --navy-dark: #071c33;
     --orange: #ff7a00;
     --orange-hover: #e96f00;
@@ -12,6 +12,7 @@
     --green: #24a148;
     --blue: #168aad;
     --gray: #7a838c;
+    --rojo: #ef4444;
     --border: #dce4ed;
     --radius: 12px;
     --shadow: 0 4px 15px rgba(11, 37, 69, 0.08);
@@ -57,24 +58,23 @@ header {
 }
 .navbar {
     background-color: var(--navy);
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 .navbar-brand {
     text-decoration: none;
 }
-.logo-subasta {
-    color: var(--white);
-    font-weight: 800;
+.logo-imagen {
+    height: 65px;
+    width: auto;
+    object-fit: contain;
+    display: block;
 }
-.logo-ya {
-    color: var(--orange);
-    font-weight: 800;
-}
-.navbar-brand small {
-    color: #b7c4d3;
-    font-size: 0.65rem;
-    letter-spacing: 0.4px;
+.logo-footer {
+    height: 55px;
+    width: auto;
+    object-fit: contain;
+    display: block;
 }
 .navbar .nav-link {
     color: var(--white);
@@ -158,12 +158,28 @@ footer {
     display: none;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
-    padding: 80px 32px;
+    justify-content: center;
+    gap: 12px;
+    padding: 70px 32px;
     text-align: center;
-    flex: 1;
+    min-height: 420px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-top: 20px;
 }
 .estado-vacio.visible   { display: flex; }
-.estado-vacio__icon     { font-size: 4rem; color: #d1d5db; }
+.estado-vacio__icon {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    color: var(--navy);
+    background: #eef5fb;
+    margin-bottom: 8px;
+}
 .estado-vacio__titulo   { font-size: 1.4rem; font-weight: 800; color: var(--navy); }
 .estado-vacio__desc     { color: var(--muted); max-width: 340px; line-height: 1.5; }

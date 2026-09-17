@@ -28,11 +28,8 @@
         <nav class="navbar navbar-expand-lg">
             <div class="container">
                 <!-- Logo -->
-                <a class="navbar-brand d-flex flex-column" href="index.html">
-                    <span class="h4 mb-0">
-                        <span class="logo-subasta">Subasta</span><span class="logo-ya">Ya</span>
-                    </span>
-                    <small>OFERTÁ PARA GANAR</small>
+                <a class="navbar-brand" href="index.html">
+                    <img src="assets/img/logo.png" alt="SubastaYa" class="logo-imagen">
                 </a>
 
                 <!-- Botón menú celular -->
@@ -65,8 +62,21 @@
         </nav>
     </header>
 
-<!-- ═══════════════════════ MAIN ═════════════════════════════ -->
+<!-- MAIN  -->
 <main class="main-sala py-4">
+
+<!-- Banner de éxito (aparece arriba de todo al realizar una puja correctamente) -->
+<div id="banner-exito" class="banner-exito hidden" role="alert">
+    <i class="fa-solid fa-circle-check"></i>
+    <div class="banner-exito__textos">
+        <strong>¡Puja realizada correctamente!</strong>
+        <span>Tu oferta fue registrada.</span>
+    </div>
+    <button class="banner-exito__cerrar" id="btn-cerrar-banner" aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+    </button>
+</div>
+
 <div class="sala-contenedor">
 
     <!-- Barra superior: Volver y Compartir -->
@@ -99,49 +109,68 @@
         <!-- COLUMNA IZQUIERDA: imagen + tabs + garantías -->
         <div class="sala-col-izq">
 
-            <!-- Galería de Imágenes -->
+            <!-- Galería de imágenes -->
             <div class="sala-galeria">
+
+                <!-- Imagen principal -->
                 <div class="sala-galeria__main">
+
                     <img
                         id="sala-img"
-                        src="https://placehold.co/640x400/1e3a5f/ffffff?text=Cargando..."
+                        src="assets/img/notebook.jpg"
                         alt="Imagen de la subasta"
                         class="sala-img-principal"
                     />
-                    <button class="galeria-arrow galeria-arrow--prev"><i class="fa-solid fa-chevron-left"></i></button>
-                    <button class="galeria-arrow galeria-arrow--next"><i class="fa-solid fa-chevron-right"></i></button>
-                    <span class="galeria-counter">1/5</span>
+
+                    <button
+                        type="button"
+                        class="galeria-arrow galeria-arrow--prev"
+                        id="galeria-prev"
+                        aria-label="Imagen anterior"
+                    >
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="galeria-arrow galeria-arrow--next"
+                        id="galeria-next"
+                        aria-label="Imagen siguiente"
+                    >
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+
+                    <span
+                        class="galeria-counter"
+                        id="galeria-counter"
+                    >
+                        1/1
+                    </span>
+
                 </div>
-                <div class="sala-galeria__thumbs">
-                    <div class="thumb-wrap activo">
-                        <img src="https://placehold.co/100x100/1e3a5f/ffffff?text=1" class="thumb-img" alt="Miniatura 1" />
-                    </div>
-                    <div class="thumb-wrap">
-                        <img src="https://placehold.co/100x100/1e3a5f/ffffff?text=2" class="thumb-img" alt="Miniatura 2" />
-                    </div>
-                    <div class="thumb-wrap">
-                        <img src="https://placehold.co/100x100/1e3a5f/ffffff?text=3" class="thumb-img" alt="Miniatura 3" />
-                    </div>
-                    <div class="thumb-wrap">
-                        <img src="https://placehold.co/100x100/1e3a5f/ffffff?text=4" class="thumb-img" alt="Miniatura 4" />
-                    </div>
-                    <div class="thumb-wrap">
-                        <img src="https://placehold.co/100x100/1e3a5f/ffffff?text=5" class="thumb-img" alt="Miniatura 5" />
-                    </div>
-                </div>
+
+                <!-- Miniaturas generadas por sala.js -->
+                <div
+                    class="sala-galeria__thumbs"
+                    id="sala-thumbs"
+                ></div>
+
             </div>
 
             <!-- Tabs de información -->
             <div class="tabs-sala">
                 <div class="tabs-sala__nav" role="tablist">
                     <button class="tab-btn activo" data-tab="tab-descripcion"   role="tab" aria-selected="true">
-                        <i class="fa-solid fa-align-left"></i> Descripción
+                        Descripción
                     </button>
                     <button class="tab-btn" data-tab="tab-caracteristicas" role="tab" aria-selected="false">
-                        <i class="fa-solid fa-list-check"></i> Características
+                        Características
+                    </button>
+                    <button class="tab-btn" data-tab="tab-envio"           role="tab" aria-selected="false">
+                        Envío
                     </button>
                     <button class="tab-btn" data-tab="tab-vendedor"        role="tab" aria-selected="false">
-                        <i class="fa-solid fa-user-tie"></i> Vendedor
+                        Vendedor
                     </button>
                 </div>
                 <div class="tabs-sala__contenido">
@@ -149,10 +178,19 @@
                         <p id="sala-descripcion" class="tab-texto">Cargando descripción...</p>
                     </div>
                     <div id="tab-caracteristicas" class="tab-panel" role="tabpanel">
-                        <p class="tab-texto tab-texto--sec">
+                        <!-- Relleno con la descripción real. Se reemplazará cuando el backend tenga un campo de características -->
+                        <p id="sala-caracteristicas" class="tab-texto tab-texto--sec">
                             <i class="fa-solid fa-circle-info"></i>
-                            Las características detalladas se mostrarán aquí.
+                            Las características detalladas estarán disponibles próximamente.
                         </p>
+                    </div>
+                    <div id="tab-envio" class="tab-panel" role="tabpanel">
+                        <ul class="tab-envio-lista">
+                            <li><i class="fa-solid fa-truck"></i> Envíos a todo el país en <strong>3 a 7 días hábiles</strong></li>
+                            <li><i class="fa-solid fa-box"></i> El artículo es empacado y enviado por el vendedor</li>
+                            <li><i class="fa-solid fa-rotate-left"></i> Consultá las condiciones de devolución con el vendedor</li>
+                            <li><i class="fa-solid fa-shield-halved"></i> Comprá con total seguridad en SubastaYa</li>
+                        </ul>
                     </div>
                     <div id="tab-vendedor" class="tab-panel" role="tabpanel">
                         <p class="tab-texto tab-texto--sec">
@@ -196,6 +234,7 @@
                             <i class="fa-regular fa-clock"></i> Finaliza en
                         </span>
                         <span class="sala-timer" id="sala-timer">--:--:--</span>
+                        <span class="metrica__fecha" id="sala-fecha-fin">—</span>
                     </div>
                 </div>
 
@@ -220,8 +259,8 @@
 
                 <!-- Botón puja rápida -->
                 <button class="btn-puja-rapida" id="btn-puja-rapida" disabled>
-                    <i class="fa-solid fa-gavel"></i>
-                    PUJAR $—
+                    <i class="fa-solid fa-gavel" id="icono-puja-rapida"></i>
+                    <span id="texto-puja-rapida">PUJAR $—</span>
                 </button>
 
                 <!-- Puja manual -->
@@ -234,7 +273,7 @@
                                 type="number"
                                 id="input-monto"
                                 class="manual-input"
-                                placeholder="ingresá un monto"
+                                placeholder="Ingresá un monto"
                                 min="0"
                                 step="1000"
                                 disabled
@@ -248,12 +287,20 @@
 
             </div><!-- /panel-puja -->
 
-            <!-- Badge de estado del postor (Afuera del panel oscuro) -->
-            <div id="badge-postor" class="badge-postor hidden" role="status" aria-live="polite">
-                <i class="fa-solid fa-trophy"></i>
-                <div class="badge-postor-textos">
-                    <strong>Estás liderando la subasta</strong>
-                    <span>Tu oferta actual es la más alta.</span>
+            <!-- Panel de resultado: reemplaza al panel de puja cuando la subasta finaliza -->
+            <!-- JS oculta panel-puja y muestra este div dinámicamente -->
+            <div id="panel-resultado" class="panel-resultado hidden" aria-live="polite"></div>
+
+            <!-- Banner anti-sniping: aparece cuando el backend extiende la subasta -->
+            <!-- Detectado por: cambio en fechaFin entre dos ciclos de polling -->
+            <div id="banner-antisniping" class="banner-antisniping hidden" role="status" aria-live="polite"></div>
+
+            <!-- Banner de estado del postor (ancho completo, debajo del panel oscuro) -->
+            <div id="banner-postor" class="banner-estado banner-estado--info" role="status" aria-live="polite">
+                <i class="fa-solid fa-circle-info"></i>
+                <div class="banner-estado__textos">
+                    <strong>Aún no realizaste ofertas</strong>
+                    <span>Sé el primero en pujar y comenzá a participar.</span>
                 </div>
             </div>
 
@@ -302,12 +349,9 @@
         <div class="container">
             <div class="footer-content">
                 <div>
-                    <strong>
-                        <span class="footer-subasta">Subasta</span><span class="footer-ya">Ya</span>
-                    </strong>
-                    <small>OFERTÁ PARA GANAR</small>
+                    <img src="assets/img/logo.png" alt="SubastaYa" class="logo-footer">
                 </div>
-                <p>© SubastaYa — Plataforma de subastas</p>
+                <p>© 2026 SubastaYa. Todos los derechos reservados.</p>
             </div>
         </div>
     </footer>

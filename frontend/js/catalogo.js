@@ -145,8 +145,11 @@ function renderizar(subastas) {
     detenerTimers();
     gridEl.innerHTML = "";
 
-    // Actualizar contador de resultados
-    if (totalEl) totalEl.textContent = subastas.length;
+    /// Actualizar contador de resultados
+    if (totalEl) {
+        totalEl.textContent =
+            `${subastas.length} subasta${subastas.length !== 1 ? "s" : ""}`;
+    }
 
     if (subastas.length === 0) {
         vacioEl?.classList.add("visible");
@@ -161,6 +164,36 @@ function renderizar(subastas) {
 
     iniciarTimers();
 }
+// RESOLVEDOR DE IMÁGENES
+function obtenerImagenProducto(subasta) {
+    // Si el backend manda una URL externa real, la usamos.
+    if (subasta.urlImagen?.startsWith("http")) {
+        return subasta.urlImagen;
+    }
+
+    // Adaptamos las imágenes del Seed del backend
+    const imagenesSeed = {
+        "/images/phone.png": "assets/img/celular.jpg",
+        "/images/critical.png": "assets/img/notebook.jpg",
+        "/images/collectible.png": "assets/img/reloj.webp",
+        "/images/jacket.png": "assets/img/zapatillas.jpg",
+        "/images/car.png": "assets/img/tv.jpg"
+    };
+
+    if (imagenesSeed[subasta.urlImagen]) {
+        return imagenesSeed[subasta.urlImagen];
+    }
+
+    // Si en algún momento el backend manda directamente
+    // una imagen que existe en assets/img
+    if (subasta.urlImagen) {
+        const nombreArchivo = subasta.urlImagen.split("/").pop();
+        return `assets/img/${nombreArchivo}`;
+    }
+
+    // Último recurso
+    return "assets/img/notebook.jpg";
+}
 
 // CREAR UNA CARD de subasta (Bootstrap)
 function crearCard(s) {
@@ -172,24 +205,66 @@ function crearCard(s) {
 
     // Status visual
     let badgeClass = "active-status";
-    if (s.estado === "PROGRAMADA") badgeClass = "upcoming-status";
-    else if (s.estado === "FINALIZADA" || s.estado === "DESIERTA") badgeClass = "finished-status";
+    let estadoVisible = "ACTIVA";
+    
+    if (s.estado === "PROGRAMADA") {
+        badgeClass = "upcoming-status";
+        estadoVisible = "PRÓXIMA";
+    }
+    else if (s.estado === "FINALIZADA") {
+        badgeClass = "finished-status";
+        estadoVisible = "FINALIZADA";
+    }
+    else if (s.estado === "DESIERTA") {
+        badgeClass = "finished-status";
+        estadoVisible = "DESIERTA";
+    }
 
     // Precio o puja
-    let labelPrecio = s.pujaActual ? "Puja actual" : "Precio base";
-    if (s.estado === "FINALIZADA") labelPrecio = "Precio final";
-    let montoMostrado = s.pujaActual ?? s.precioBase;
+    let labelPrecio = "Precio base";
 
-    // Countdown logic
+    if (s.pujaActual !== null && s.pujaActual !== undefined) {
+        labelPrecio = "Puja actual";
+    }
+
+    if (s.estado === "FINALIZADA") {
+        labelPrecio = "Precio final";
+    }
+
+    const montoMostrado = s.pujaActual ?? s.precioBase;
+
     let textoTiempo = "";
     let colorTexto = "var(--muted)";
+
     if (s.estado === "FINALIZADA" || s.estado === "DESIERTA") {
+
         textoTiempo = "Finalizada";
-    } else {
-        textoTiempo = `<span class="countdown" data-fecha-fin="${s.fechaFin}">
-                           <span class="cd-texto">Calculando...</span>
-                       </span>`;
-        colorTexto = "var(--green)"; // En vivo
+
+    }
+    else if (s.estado === "PROGRAMADA") {
+
+        textoTiempo = `
+            <span class="countdown"
+                data-fecha="${s.fechaInicio}"
+                data-tipo="inicio">
+                <span class="cd-texto">Calculando...</span>
+            </span>
+        `;
+
+        colorTexto = "var(--blue)";
+
+    }
+    else {
+
+        textoTiempo = `
+            <span class="countdown"
+                data-fecha="${s.fechaFin}"
+                data-tipo="fin">
+                <span class="cd-texto">Calculando...</span>
+            </span>
+        `;
+
+        colorTexto = "var(--green)";
     }
 
     // Botón principal
@@ -201,18 +276,7 @@ function crearCard(s) {
     }
 
     // Imagen
-    let imgSrc = `https://placehold.co/600x400/0b2545/ff7a00?text=${encodeURIComponent(s.titulo)}`;
-    if (s.urlImagen) {
-        if (s.urlImagen.startsWith("http")) {
-            imgSrc = s.urlImagen;
-        } else {
-            // Reubicar "img/" a "assets/img/" si el backend manda la ruta vieja o nueva
-            imgSrc = s.urlImagen.replace(/^img\//, "assets/img/");
-            if (!imgSrc.startsWith("assets/img/")) {
-                imgSrc = "assets/img/" + imgSrc; // Por si viene solo el nombre del archivo
-            }
-        }
-    }
+    const imgSrc = obtenerImagenProducto(s);
 
     col.innerHTML = `
         <article class="auction-card">
@@ -222,7 +286,9 @@ function crearCard(s) {
                 <button class="favorite-button" type="button" aria-label="Favorito">
                     <i class="bi bi-heart"></i>
                 </button>
-                <span class="auction-status ${badgeClass}">${s.estado}</span>
+                <span class="auction-status ${badgeClass}">
+                ${estadoVisible}
+                </span>
             </div>
             
             <div class="auction-content">
@@ -230,7 +296,7 @@ function crearCard(s) {
                 <p class="auction-category">${esc(catNombre)}</p>
                 
                 <small>${labelPrecio}</small>
-                <p class="auction-price">$ ${moneda(montoMostrado)}</p>
+                <p class="auction-price">${moneda(montoMostrado)}</p>
                 
                 <div class="auction-info">
                     <span>
@@ -279,25 +345,39 @@ function detenerTimers() {
 }
 
 function actualizarTodosLosCountdowns() {
-    const ahora = Date.now();
-    document.querySelectorAll(".countdown[data-fecha-fin]").forEach(el => {
-        const fin      = new Date(el.dataset.fechaFin).getTime();
-        const restanMs = fin - ahora;
 
-        // El texto del tiempo va dentro del span .cd-texto para no pisar el ícono FA
+    const ahora = Date.now();
+
+    document.querySelectorAll(".countdown[data-fecha]").forEach(el => {
+
+        const fecha = new Date(el.dataset.fecha).getTime();
+        const restanMs = fecha - ahora;
+
         const textoEl = el.querySelector(".cd-texto") ?? el;
 
         if (restanMs <= 0) {
-            textoEl.textContent = "Finalizada";
-            el.className = "countdown countdown--inactivo";
+
+            if (el.dataset.tipo === "inicio") {
+                textoEl.textContent = "Comenzando...";
+                el.className = "countdown countdown--inactivo";
+            } else {
+                textoEl.textContent = "Finalizada";
+                el.className = "countdown countdown--inactivo";
+            }
+
             return;
         }
 
         textoEl.textContent = msTiempo(restanMs);
+
         el.className = "countdown";
 
-        if      (restanMs < 60_000)  el.classList.add("countdown--critico");
-        else if (restanMs < 120_000) el.classList.add("countdown--warn");
+        if (restanMs < 60_000) {
+            el.classList.add("countdown--critico");
+        }
+        else if (restanMs < 120_000) {
+            el.classList.add("countdown--warn");
+        }
     });
 }
 
