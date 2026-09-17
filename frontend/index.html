@@ -32,26 +32,96 @@
                 </button>
 
                 <!-- Navegación -->
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto align-items-lg-center">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="index.html">Inicio</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="publicar.html">Crear subasta</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="billetera.html">Billetera</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="actividades.html">Mis actividades</a>
-                        </li>
-                        <li class="nav-item ms-lg-3 mt-3 mt-lg-0">
-                            <!-- Selector inyectado para la simulación -->
-                            <select class="selector-usuario" id="selector-usuario" aria-label="Usuario activo"></select>
-                        </li>
-                    </ul>
-                </div>
+                <!-- Navegación -->
+<div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav ms-auto align-items-lg-center">
+
+        <li class="nav-item">
+            <a class="nav-link active" href="index.html">Inicio</a>
+        </li>
+
+        <!-- Opciones disponibles solamente con sesión iniciada -->
+        <li class="nav-item nav-solo-sesion">
+            <a class="nav-link" href="publicar.html">Crear subasta</a>
+        </li>
+
+        <li class="nav-item nav-solo-sesion">
+            <a class="nav-link" href="billetera.html">Billetera</a>
+        </li>
+
+        <li class="nav-item nav-solo-sesion">
+            <a class="nav-link" href="actividades.html">Mis actividades</a>
+        </li>
+
+        <!-- Se muestra cuando NO hay sesión -->
+        <li class="nav-item ms-lg-3" id="navIniciarSesion">
+            <a class="nav-link nav-login" href="login.html">
+                Iniciar sesión
+            </a>
+        </li>
+
+        <!-- Se muestra cuando HAY sesión -->
+        <li class="nav-item dropdown ms-lg-3 d-none" id="navCuenta">
+
+            <button
+                class="nav-cuenta dropdown-toggle"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false">
+
+                <span class="nav-cuenta-icono" id="usuario-icono-letra"></span>
+
+                <span id="navNombreUsuario"></span>
+
+            </button>
+
+            <div class="dropdown-menu dropdown-menu-end menu-cuenta">
+
+               <div class="menu-cuenta-actual">
+
+    <span class="menu-cuenta-actual-icono" id="menuUsuarioIcono"></span>
+
+    <strong id="menuNombreUsuario"></strong>
+    <span id="menuEmailUsuario"></span>
+
+</div>
+
+                <div class="dropdown-divider"></div>
+
+                <span class="menu-cuenta-titulo">
+                    Cambiar cuenta
+                </span>
+
+                <div id="menuCuentasVinculadas"></div>
+
+                <button
+                    type="button"
+                    class="dropdown-item menu-otra-cuenta"
+                    id="btnOtraCuenta">
+
+                    <i class="bi bi-person-plus"></i>
+                    Iniciar sesión con otra cuenta
+
+                </button>
+
+                <div class="dropdown-divider"></div>
+
+                <button
+                    type="button"
+                    class="dropdown-item menu-cerrar-sesion"
+                    id="btnCerrarSesion">
+
+                    <i class="bi bi-box-arrow-right"></i>
+                    Cerrar sesión
+
+                </button>
+
+            </div>
+
+        </li>
+
+    </ul>
+</div>
             </div>
         </nav>
     </header>

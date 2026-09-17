@@ -27,76 +27,116 @@
     <!-- =====================================================
          HEADER
          ===================================================== -->
+<header>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
 
-    <header>
-        <nav class="navbar navbar-expand-lg">
-            <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <img src="assets/img/logo.png"
+                     alt="SubastaYa"
+                     class="logo-imagen">
+            </a>
 
-                <!-- Logo -->
-                <a class="navbar-brand" href="index.html">
-                    <img src="assets/img/logo.png"
-                         alt="SubastaYa"
-                         class="logo-imagen">
-                </a>
+            <button class="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-                <!-- Botón menú celular -->
-                <button class="navbar-toggler"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#navbarNav"
-                        aria-controls="navbarNav"
-                        aria-expanded="false"
-                        aria-label="Abrir navegación">
+            <div class="collapse navbar-collapse" id="navbarNav">
 
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                <ul class="navbar-nav ms-auto align-items-lg-center">
 
-                <!-- Navegación -->
-                <div class="collapse navbar-collapse" id="navbarNav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            Inicio
+                        </a>
+                    </li>
 
-                    <ul class="navbar-nav ms-auto align-items-lg-center">
+                    <li class="nav-item nav-solo-sesion">
+                        <a class="nav-link" href="publicar.html">
+                            Crear subasta
+                        </a>
+                    </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link"
-                               href="index.html">
-                                Inicio
-                            </a>
-                        </li>
+                    <li class="nav-item nav-solo-sesion">
+                        <a class="nav-link" href="billetera.html">
+                            Billetera
+                        </a>
+                    </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link"
-                               href="publicar.html">
-                                Crear subasta
-                            </a>
-                        </li>
+                    <li class="nav-item nav-solo-sesion">
+                        <a class="nav-link active" href="actividades.html">
+                            Mis actividades
+                        </a>
+                    </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link"
-                               href="billetera.html">
-                                Billetera
-                            </a>
-                        </li>
+                    <li class="nav-item ms-lg-3" id="navIniciarSesion">
+                        <a class="nav-link nav-login" href="login.html">
+                            Iniciar sesión
+                        </a>
+                    </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link active"
-                               href="actividades.html">
-                                Mis actividades
-                            </a>
-                        </li>
+                    <li class="nav-item dropdown ms-lg-3 d-none" id="navCuenta">
 
-                        <li class="nav-item ms-lg-3 mt-3 mt-lg-0">
-                            <select class="selector-usuario"
-                                    id="selector-usuario"
-                                    aria-label="Usuario activo">
-                            </select>
-                        </li>
+                        <button class="nav-cuenta dropdown-toggle"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false">
 
-                    </ul>
-                </div>
+                            <span class="nav-cuenta-icono"
+                                  id="usuario-icono-letra"></span>
+
+                            <span id="navNombreUsuario"></span>
+                        </button>
+
+                        <div class="dropdown-menu dropdown-menu-end menu-cuenta">
+
+                            <div class="menu-cuenta-actual">
+
+                                <span class="menu-cuenta-actual-icono"
+                                      id="menuUsuarioIcono"></span>
+
+                                <strong id="menuNombreUsuario"></strong>
+                                <span id="menuEmailUsuario"></span>
+
+                            </div>
+
+                            <div class="dropdown-divider"></div>
+
+                            <span class="menu-cuenta-titulo">
+                                Cambiar cuenta
+                            </span>
+
+                            <div id="menuCuentasVinculadas"></div>
+
+                            <button type="button"
+                                    class="dropdown-item menu-otra-cuenta"
+                                    id="btnOtraCuenta">
+                                <i class="bi bi-person-plus"></i>
+                                Iniciar sesión con otra cuenta
+                            </button>
+
+                            <div class="dropdown-divider"></div>
+
+                            <button type="button"
+                                    class="dropdown-item menu-cerrar-sesion"
+                                    id="btnCerrarSesion">
+                                <i class="bi bi-box-arrow-right"></i>
+                                Cerrar sesión
+                            </button>
+
+                        </div>
+
+                    </li>
+
+                </ul>
+
             </div>
-        </nav>
-    </header>
-
+        </div>
+    </nav>
+</header>
 
     <!-- =====================================================
          CONTENIDO PRINCIPAL
