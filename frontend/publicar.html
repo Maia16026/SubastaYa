@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>SubastaYa - Crear Subasta</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/publicar.css">
+</head>
+
+<body>
+
+    <header>
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+
+                <a class="navbar-brand" href="index.html">
+                    <img src="assets/img/logo-transparente.png"
+                         alt="SubastaYa - Ofertá para ganar"
+                         class="logo-navbar">
+                </a>
+
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+
+                    <ul class="navbar-nav ms-auto align-items-lg-center">
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">
+                                Inicio
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link active" href="publicar.html">
+                                Crear subasta
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="billetera.html">
+                                Billetera
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="actividades.html">
+                                Mis actividades
+                            </a>
+                        </li>
+
+                        <li class="nav-item ms-lg-3 mt-3 mt-lg-0">
+                            <select class="selector-usuario"
+                                    id="selector-usuario"
+                                    aria-label="Usuario activo">
+                            </select>
+                        </li>
+
+                    </ul>
+
+                </div>
+            </div>
+        </nav>
+    </header>
+
+
+    <main class="publicar-main">
+
+        <div class="container">
+
+            <div class="publicar-titulo">
+                <h1>Crear Subasta</h1>
+                <p>Publicá un nuevo producto y empezá a recibir pujas.</p>
+            </div>
+
+
+            <section>
+
+                <form id="form-publicar" novalidate>
+
+                    <div class="row g-4">
+
+                        <div class="col-lg-7">
+
+                            <div class="campo-formulario">
+
+                                <label for="categoria" class="form-label">
+                                    Categoría
+                                </label>
+
+                                <select id="categoria" class="form-select">
+
+                                    <option value="">
+                                        Seleccioná una categoría
+                                    </option>
+
+                                    <option value="Tecnología">Tecnología</option>
+                                    <option value="Hogar">Hogar</option>
+                                    <option value="Deportes">Deportes</option>
+                                    <option value="Moda">Moda</option>
+                                    <option value="Vehículos">Vehículos</option>
+                                    <option value="Coleccionables">Coleccionables</option>
+                                    <option value="Arte">Arte</option>
+                                    <option value="Herramientas">Herramientas</option>
+                                    <option value="Otros">Otros</option>
+
+                                </select>
+
+                                <div class="mensaje-error"
+                                     data-error-for="categoria">
+                                </div>
+
+                            </div>
+
+
+                            <div class="campo-formulario">
+
+                                <label for="titulo" class="form-label">
+                                    Título
+                                </label>
+
+                                <input id="titulo"
+                                       type="text"
+                                       class="form-control"
+                                       placeholder="Ej. Notebook Lenovo">
+
+                                <div class="mensaje-error"
+                                     data-error-for="titulo">
+                                </div>
+
+                            </div>
+
+
+                            <div class="campo-formulario">
+
+                                <label for="descripcion" class="form-label">
+                                    Descripción
+                                </label>
+
+                                <textarea id="descripcion"
+                                          class="form-control"
+                                          rows="5"
+                                          placeholder="Contanos más sobre el producto..."></textarea>
+
+                                <div class="mensaje-error"
+                                     data-error-for="descripcion">
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-lg-5">
+
+                            <div class="campo-formulario">
+
+                                <label for="imagenUrl" class="form-label">
+                                    URL de la imagen
+                                </label>
+
+                                <input id="imagenUrl"
+                                       type="url"
+                                       class="form-control"
+                                       placeholder="https://...">
+
+                                <div class="mensaje-error"
+                                     data-error-for="imagenUrl">
+                                </div>
+
+                            </div>
+
+
+                            <div class="preview-box">
+
+                                <img id="previewImage"
+                                     class="preview-image"
+                                     alt="Vista previa del producto">
+
+                                <div id="previewPlaceholder"
+                                     class="preview-placeholder">
+
+                                    <i class="bi bi-image"></i>
+
+                                    <p>
+                                        La vista previa de la imagen<br>
+                                        se mostrará aquí
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="row g-4 fila-formulario">
+
+                        <div class="col-md-6">
+
+                            <div class="campo-formulario">
+
+                                <label for="precioBase" class="form-label">
+                                    Precio base
+                                </label>
+
+                                <div class="input-moneda">
+
+                                    <span>$</span>
+
+                                    <input id="precioBase"
+                                           type="number"
+                                           min="0.01"
+                                           step="0.01"
+                                           class="form-control"
+                                           value="0">
+
+                                </div>
+
+                                <div class="mensaje-error"
+                                     data-error-for="precioBase">
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="campo-formulario">
+
+                                <label for="incremento" class="form-label">
+                                    Incremento mínimo
+                                </label>
+
+                                <div class="input-moneda">
+
+                                    <span>$</span>
+
+                                    <input id="incremento"
+                                           type="number"
+                                           min="0.01"
+                                           step="0.01"
+                                           class="form-control"
+                                           value="0">
+
+                                </div>
+
+                                <div class="mensaje-error"
+                                     data-error-for="incremento">
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="row g-4 fila-formulario">
+
+                        <div class="col-md-6">
+
+                            <div class="campo-formulario">
+
+                                <label for="fechaInicio" class="form-label">
+                                    Fecha de inicio
+                                </label>
+
+                                <input id="fechaInicio"
+                                       type="datetime-local"
+                                       class="form-control">
+
+                                <div class="mensaje-error"
+                                     data-error-for="fechaInicio">
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="campo-formulario">
+
+                                <label for="fechaFin" class="form-label">
+                                    Fecha de finalización
+                                </label>
+
+                                <input id="fechaFin"
+                                       type="datetime-local"
+                                       class="form-control">
+
+                                <div class="mensaje-error"
+                                     data-error-for="fechaFin">
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="publicar-acciones">
+
+                        <button id="btnCancelar"
+                                type="button"
+                                class="btn-cancelar">
+
+                            <i class="bi bi-arrow-left"></i>
+                            Cancelar
+
+                        </button>
+
+
+                        <button id="btnPublicar"
+                                type="submit"
+                                class="btn-publicar"
+                                disabled>
+
+                            <i id="iconoPublicar"
+                               class="bi bi-hammer">
+                            </i>
+
+                            <span id="textoPublicar">
+                                PUBLICAR SUBASTA
+                            </span>
+
+                            <span id="spinnerPublicar"
+                                  class="spinner-border spinner-border-sm d-none"
+                                  aria-hidden="true">
+                            </span>
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </section>
+
+
+            <section id="successPanel"
+                     class="publicacion-exitosa d-none">
+
+                <div class="exito-icono">
+                    <i class="bi bi-check-lg"></i>
+                </div>
+
+                <h2>¡Subasta publicada!</h2>
+
+                <p>Tu subasta se creó correctamente.</p>
+
+                <div class="exito-acciones">
+
+                    <a href="actividades.html"
+                       class="btn-mis-publicaciones">
+                        Ir a Mis publicaciones
+                    </a>
+
+                    <button id="btnCrearOtra"
+                            type="button"
+                            class="btn-crear-otra">
+                        Crear otra subasta
+                    </button>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+
+    <footer>
+
+        <div class="container">
+
+            <div class="footer-content">
+
+                <div>
+                    <a href="index.html"
+                       class="footer-logo-link">
+
+                        <img src="assets/img/logo-transparente.png"
+                             alt="SubastaYa - Ofertá para ganar"
+                             class="logo-footer"
+                             style="width: 90px; height: 38px; object-fit: contain; display: block;">
+
+                    </a>
+                </div>
+
+                <p>
+                    © SubastaYa — Plataforma de subastas
+                </p>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="module" src="js/app.js"></script>
+
+    <script src="js/publicar.js"></script>
+
+</body>
+
+</html>

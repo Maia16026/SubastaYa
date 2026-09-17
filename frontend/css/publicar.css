@@ -1,0 +1,429 @@
+/* =========================================================
+   CREAR SUBASTA
+   Estilos específicos de publicar.html.
+
+   Los colores, tipografía, navbar, footer y variables
+   generales vienen de styles.css.
+   ========================================================= */
+
+
+/* ---------- LOGO DEL HEADER ---------- */
+
+.navbar-logo {
+    display: block;
+    width: 150px;
+    height: 48px;
+    object-fit: contain;
+    object-position: left center;
+}
+
+
+/* ---------- CONTENIDO ---------- */
+
+.publicar-main {
+    padding-top: 24px;
+    padding-bottom: 36px;
+}
+
+
+/* ---------- TÍTULO ---------- */
+
+.publicar-titulo {
+    margin-bottom: 18px;
+}
+
+    .publicar-titulo h1 {
+        margin: 0;
+        color: var(--navy);
+        font-size: 1.6rem;
+        font-weight: 800;
+    }
+
+    .publicar-titulo p {
+        margin: 3px 0 0 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+    }
+
+
+/* ---------- FORMULARIO ---------- */
+
+#form-publicar {
+    background-color: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    box-shadow: var(--shadow);
+}
+
+
+/* ---------- CAMPOS ---------- */
+
+.campo-formulario {
+    margin-bottom: 16px;
+}
+
+    .campo-formulario .form-label {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--navy);
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+
+    .campo-formulario .form-control,
+    .campo-formulario .form-select {
+        min-height: 40px;
+        border: 1px solid var(--border);
+        border-radius: var(--radio-sm);
+        background-color: var(--white);
+        color: var(--text);
+        font-size: 0.84rem;
+    }
+
+        .campo-formulario .form-control::placeholder {
+            color: #98a4b1;
+        }
+
+        .campo-formulario .form-control:focus,
+        .campo-formulario .form-select:focus {
+            border-color: var(--orange);
+            box-shadow: 0 0 0 2px rgba(255, 122, 0, 0.12);
+        }
+
+
+    /* ---------- DESCRIPCIÓN ---------- */
+
+    .campo-formulario textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+
+/* ---------- PREVISUALIZACIÓN ---------- */
+
+.preview-box {
+    position: relative;
+    width: 100%;
+    height: 205px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background-color: #f5f8fb;
+    border: 1px solid #edf1f5;
+    border-radius: var(--radio-sm);
+}
+
+.preview-placeholder {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    text-align: center;
+}
+
+    .preview-placeholder i {
+        color: #8293a5;
+        font-size: 2rem;
+    }
+
+    .preview-placeholder p {
+        margin: 0;
+        font-size: 0.82rem;
+        line-height: 1.4;
+    }
+
+.preview-image {
+    display: none;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
+/* ---------- FILAS DE PRECIOS Y FECHAS ---------- */
+
+.fila-formulario {
+    margin-top: 0;
+}
+
+
+/* ---------- PRECIO ---------- */
+
+.input-moneda {
+    position: relative;
+}
+
+    .input-moneda > span {
+        position: absolute;
+        top: 50%;
+        left: 13px;
+        transform: translateY(-50%);
+        color: var(--navy);
+        font-size: 0.84rem;
+        z-index: 2;
+    }
+
+    .input-moneda .form-control {
+        padding-left: 29px;
+    }
+
+
+/* ---------- VALIDACIÓN ---------- */
+
+.form-control.is-invalid,
+.form-select.is-invalid {
+    border-color: #dc3545;
+}
+
+    .form-control.is-invalid:focus,
+    .form-select.is-invalid:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.10);
+    }
+
+.mensaje-error {
+    display: block;
+    margin-top: 5px;
+    color: #dc3545;
+    font-size: 0.75rem;
+}
+
+/* ---------- ACCIONES ---------- */
+
+.publicar-acciones {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-top: 4px;
+    padding-top: 20px;
+    border-top: 1px solid #edf1f5;
+}
+
+
+/* Cancelar */
+
+.btn-cancelar {
+    min-width: 125px;
+    padding: 10px 18px;
+    background-color: var(--white);
+    color: var(--navy);
+    border: 1px solid #8d9baa;
+    border-radius: var(--radio-sm);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+    .btn-cancelar:hover {
+        background-color: #f7f9fb;
+        border-color: var(--navy);
+    }
+
+
+/* Publicar */
+
+.btn-publicar {
+    min-width: 205px;
+    min-height: 42px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background-color: var(--orange);
+    color: var(--white);
+    border: 0;
+    border-radius: var(--radio-sm);
+    font-size: 0.8rem;
+    font-weight: 800;
+    box-shadow: 0 3px 8px rgba(255, 122, 0, 0.20);
+    cursor: pointer;
+}
+
+    .btn-publicar:hover:not(:disabled) {
+        background-color: var(--orange-hover);
+    }
+
+    .btn-publicar:disabled {
+        background-color: #aeb9c5;
+        color: var(--white);
+        box-shadow: none;
+        cursor: not-allowed;
+    }
+
+
+/* =========================================================
+   PUBLICACIÓN EXITOSA
+   ========================================================= */
+
+.publicacion-exitosa {
+    max-width: 620px;
+    margin: 35px auto;
+    padding: 52px 30px;
+    background-color: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+
+.exito-icono {
+    width: 74px;
+    height: 74px;
+    margin: 0 auto 18px auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #dcf7e6;
+    color: var(--green);
+    border-radius: 50%;
+    font-size: 2.2rem;
+}
+
+.publicacion-exitosa h2 {
+    margin: 0 0 7px 0;
+    color: var(--navy);
+    font-size: 1.55rem;
+    font-weight: 800;
+}
+
+.publicacion-exitosa p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.exito-acciones {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+
+/* Mis publicaciones */
+
+.btn-mis-publicaciones {
+    min-width: 175px;
+    padding: 10px 18px;
+    background-color: var(--white);
+    color: var(--navy);
+    border: 1px solid #8d9baa;
+    border-radius: var(--radio-sm);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+    .btn-mis-publicaciones:hover {
+        color: var(--navy);
+        background-color: #f7f9fb;
+        border-color: var(--navy);
+    }
+
+
+/* Crear otra */
+
+.btn-crear-otra {
+    min-width: 175px;
+    padding: 10px 18px;
+    background-color: var(--orange);
+    color: var(--white);
+    border: 1px solid var(--orange);
+    border-radius: var(--radio-sm);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+    .btn-crear-otra:hover {
+        background-color: var(--orange-hover);
+    }
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 991.98px) {
+
+    .navbar-logo {
+        width: 135px;
+        height: 44px;
+    }
+
+    .preview-box {
+        height: 195px;
+    }
+}
+
+
+@media (max-width: 767.98px) {
+
+    .publicar-main {
+        padding-top: 20px;
+        padding-bottom: 28px;
+    }
+
+    .publicar-titulo h1 {
+        font-size: 1.4rem;
+    }
+
+    #form-publicar {
+        padding: 18px;
+    }
+
+    .publicar-acciones {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .btn-cancelar,
+    .btn-publicar {
+        width: 100%;
+    }
+
+    .exito-acciones {
+        flex-direction: column;
+    }
+
+    .btn-mis-publicaciones,
+    .btn-crear-otra {
+        width: 100%;
+    }
+}
+
+
+@media (max-width: 575.98px) {
+
+    .navbar-logo {
+        width: 120px;
+        height: 40px;
+    }
+
+    .publicar-main {
+        padding-top: 16px;
+    }
+
+    #form-publicar {
+        padding: 15px;
+    }
+}
+
+.logo-navbar {
+    width: 105px;
+    height: 42px;
+    object-fit: contain;
+    display: block;
+}
+
+.navbar-brand {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+

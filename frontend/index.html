@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SubastaYa - Inicio</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- CSS propio -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/catalogo.css">
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <!-- Logo -->
+                <a class="navbar-brand d-flex flex-column" href="index.html">
+                    <span class="h4 mb-0">
+                        <span class="logo-subasta">Subasta</span><span class="logo-ya">Ya</span>
+                    </span>
+                    <small>OFERTÁ PARA GANAR</small>
+                </a>
+
+                <!-- Botón menú celular -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Navegación -->
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto align-items-lg-center">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="index.html">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="publicar.html">Crear subasta</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="billetera.html">Billetera</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="actividades.html">Mis actividades</a>
+                        </li>
+                        <li class="nav-item ms-lg-3 mt-3 mt-lg-0">
+                            <!-- Selector inyectado para la simulación -->
+                            <select class="selector-usuario" id="selector-usuario" aria-label="Usuario activo"></select>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+
+    <!-- CONTENIDO -->
+    <main class="container my-4">
+
+        <!-- BANNER -->
+        <section class="hero">
+            <div class="row align-items-center">
+                <!-- Texto del banner -->
+                <div class="col-lg-7">
+                    <h1>
+                        Más que subastas,
+                        <span>oportunidades reales</span>
+                    </h1>
+                    <p>
+                        Tecnología, hogar, moda, vehículos y mucho más.
+                        Todo en un solo lugar.
+                    </p>
+                    <!-- Buscador -->
+                    <form class="hero-search" id="form-busqueda">
+                        <input type="search" class="form-control" placeholder="Buscar productos, categorías..." id="input-busqueda">
+                        <button type="submit" class="btn">Buscar</button>
+                    </form>
+                </div>
+
+                <!-- Imagen del banner -->
+                <div class="col-lg-5 hero-image">
+                    <!-- Cambié la ruta a un placeholder porque no tenemos su img -->
+                    <img src="https://placehold.co/600x400/0b2545/ff7a00?text=Banner+SubastaYa" alt="SubastaYa" class="hero-banner-image">
+                </div>
+            </div>
+        </section>
+
+
+        <!-- CATEGORÍAS -->
+        <section class="categories-section">
+            <h2>Categorías</h2>
+            <div class="categories" id="contenedor-categorias">
+                <!-- Se poblarán por JS, pero dejo estáticas como fallback/ejemplo -->
+                <button class="category activo" data-id="0">
+                    <span class="category-icon"><i class="bi bi-grid-fill"></i></span> Todas
+                </button>
+                <button class="category" data-id="1">
+                    <span class="category-icon"><i class="bi bi-laptop"></i></span> Tecnología
+                </button>
+                <button class="category" data-id="2">
+                    <span class="category-icon"><i class="bi bi-collection"></i></span> Coleccionables
+                </button>
+                <button class="category" data-id="3">
+                    <span class="category-icon"><i class="bi bi-handbag"></i></span> Indumentaria
+                </button>
+                <button class="category" data-id="4">
+                    <span class="category-icon"><i class="bi bi-car-front"></i></span> Vehículos
+                </button>
+            </div>
+        </section>
+
+
+        <!-- FILTROS -->
+        <section class="filters-section">
+            <div class="row g-3">
+                <!-- Estado -->
+                <div class="col-md">
+                    <label class="form-label">Estado</label>
+                    <select class="form-select" id="filtro-estado">
+                        <option value="">Todas</option>
+                        <option value="ACTIVA">Activas</option>
+                        <option value="PROGRAMADA">Próximas</option>
+                        <option value="FINALIZADA">Finalizadas</option>
+                    </select>
+                </div>
+
+                <!-- Categoría (mobile extra fallback si no usan las pills) -->
+                <div class="col-md">
+                    <label class="form-label">Categoría</label>
+                    <select class="form-select" id="filtro-categoria">
+                        <option value="">Todas</option>
+                        <option value="1">Tecnología</option>
+                        <option value="2">Coleccionables</option>
+                        <option value="3">Indumentaria</option>
+                        <option value="4">Vehículos</option>
+                    </select>
+                </div>
+
+                <!-- Precio mínimo -->
+                <div class="col-md">
+                    <label class="form-label">Precio mínimo</label>
+                    <input type="number" class="form-control" id="filtro-precio-min" placeholder="$ Min">
+                </div>
+
+                <!-- Precio máximo -->
+                <div class="col-md">
+                    <label class="form-label">Precio máximo</label>
+                    <input type="number" class="form-control" id="filtro-precio-max" placeholder="$ Máx">
+                </div>
+
+                <!-- Orden -->
+                <div class="col-md">
+                    <label class="form-label">Ordenar por</label>
+                    <select class="form-select" id="filtro-orden">
+                        <option value="tiempo">Tiempo restante</option>
+                        <option value="puja">Mayor puja</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- RESULTADOS -->
+        <section class="results-section">
+            <div class="results-header">
+                <h2>Resultados: <span id="total-resultados">0 subastas</span></h2>
+            </div>
+
+            <!-- SPINNER (mientras carga) -->
+            <div class="spinner-wrap" id="spinner-global">
+                <div class="spinner"></div>
+            </div>
+
+            <!-- ESTADO VACÍO -->
+            <div class="estado-vacio" id="estado-vacio">
+                <div class="estado-vacio__icon"><i class="bi bi-search"></i></div>
+                <h3 class="estado-vacio__titulo">No encontramos subastas</h3>
+                <p class="estado-vacio__desc">No hay subastas que coincidan con los filtros seleccionados.</p>
+                <button class="btn btn-warning mt-3 text-white fw-bold" id="btn-limpiar">
+                    <i class="bi bi-funnel"></i> Limpiar filtros
+                </button>
+            </div>
+
+            <!-- GRID DE TARJETAS (JS lo poblará) -->
+            <div class="row g-4" id="grid-subastas">
+                <!-- Se inyectan <div class="col-md-6 col-lg-4">...</div> -->
+            </div>
+        </section>
+
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <strong>
+                        <span class="footer-subasta">Subasta</span><span class="footer-ya">Ya</span>
+                    </strong>
+                    <small>OFERTÁ PARA GANAR</small>
+                </div>
+                <p>© SubastaYa — Plataforma de subastas</p>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JavaScript propio -->
+    <script type="module" src="js/app.js"></script>
+    <script type="module" src="js/catalogo.js"></script>
+
+</body>
+</html>
