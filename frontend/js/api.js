@@ -168,3 +168,28 @@ export async function obtenerTransaccionesBilletera(usuarioId) {
 
     return respuesta.json();
 }
+// =========================================================
+// CREAR SUBASTA
+// =========================================================
+
+// Crea una nueva subasta.
+export async function crearSubasta(datosSubasta) {
+    const respuesta = await fetch(`${API_URL}/subastas`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(datosSubasta)
+    });
+
+    if (respuesta.status === 400) {
+        const cuerpo = await respuesta.json();
+        throw new Error(cuerpo.error ?? "No se pudo crear la subasta.");
+    }
+
+    if (!respuesta.ok) {
+        throw new Error(`Error al crear la subasta: HTTP ${respuesta.status}`);
+    }
+
+    return respuesta.json();
+}
