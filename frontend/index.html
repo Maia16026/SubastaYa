@@ -58,39 +58,40 @@
 
 
     <!-- CONTENIDO -->
-    <main class="container my-4">
+  <!-- BANNER -->
+<section class="hero">
+    <img
+        src="assets/img/banner-nuevo.png"
+        alt="SubastaYa"
+        class="hero-background">
 
-        <!-- BANNER -->
-        <section class="hero">
-            <div class="row align-items-center">
-                <!-- Texto del banner -->
-                <div class="col-lg-7">
-                    <h1>
-                        Más que subastas,
-                        <span>oportunidades reales</span>
-                    </h1>
-                    <p>
-                        Tecnología, hogar, moda, vehículos y mucho más.
-                        Todo en un solo lugar.
-                    </p>
-                    <!-- Buscador -->
-                    <form class="hero-search" id="form-busqueda">
-                        <input type="search" class="form-control" placeholder="Buscar productos, categorías..." id="input-busqueda">
-                        <button type="submit" class="btn">Buscar</button>
-                    </form>
-                </div>
+    <div class="hero-content">
+        <h1>
+            Más que subastas,
+            <span>oportunidades reales</span>
+        </h1>
 
-                <!-- Imagen del banner -->
-                <div class="col-lg-5 hero-image">
-                    <!-- Cambié la ruta a un placeholder porque no tenemos su img -->
-                    <img src="assets/img/banner.jpg" alt="SubastaYa" class="hero-banner-image">
-                </div>
-            </div>
-        </section>
+        <p>
+            Tecnología, hogar, moda, vehículos y mucho más.
+            Todo en un solo lugar.
+        </p>
 
+        <form class="hero-search" id="form-busqueda">
+            <input
+                type="search"
+                class="form-control"
+                placeholder="Buscar productos, categorías..."
+                id="input-busqueda">
 
-        <!-- CATEGORÍAS -->
-        <section class="categories-section">
+            <button type="submit" class="btn">Buscar</button>
+        </form>
+    </div>
+</section>
+
+<main class="container my-4">
+
+    <!-- CATEGORÍAS -->
+<section class="categories-section">
             <h2>Categorías</h2>
             <div class="categories" id="contenedor-categorias">
                 <!-- Se poblarán por JS, pero dejo estáticas como fallback/ejemplo -->
