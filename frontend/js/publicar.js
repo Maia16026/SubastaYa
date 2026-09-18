@@ -157,10 +157,17 @@ function obtenerErrorCampo(nombreCampo) {
     }
 
     if (nombreCampo === "fechaInicio") {
-        if (valor === "") {
-            return "Seleccioná la fecha de inicio.";
-        }
+    if (valor === "") {
+        return "Seleccioná la fecha de inicio.";
     }
+
+    const fechaInicio = new Date(valor);
+    const fechaActual = new Date();
+
+    if (fechaInicio < fechaActual) {
+        return "La fecha de inicio no puede ser anterior a la fecha actual.";
+    }
+}
 
     if (nombreCampo === "fechaFin") {
         if (valor === "") {

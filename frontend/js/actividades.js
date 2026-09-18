@@ -870,5 +870,13 @@ window.addEventListener("usuarioCambiado", function (evento) {
 
 const usuarioActivo = obtenerUsuarioActivo();
 
-mostrarPestanaCompras();
+const parametrosUrl = new URLSearchParams(window.location.search);
+const seccion = parametrosUrl.get("seccion");
+
+if (seccion === "publicaciones") {
+    mostrarPestanaPublicaciones();
+} else {
+    mostrarPestanaCompras();
+}
+
 cargarActividadesUsuario(usuarioActivo);
