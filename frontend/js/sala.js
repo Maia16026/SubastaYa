@@ -2,7 +2,7 @@
 // Polling cada 3 segundos, temporizador, anti-sniping,
 // manejo de HTTP 201 / 400 / 409 y banner Liderando/Outbid
 
-import { obtenerSubastaPorId, obtenerPujas, realizarPuja } from "./api.js";
+import { obtenerSubastaPorId, obtenerPujas, obtenerPujasPorComprador, realizarPuja } from "./api.js";
 import { obtenerUsuarioActivo } from "./app.js";
 
 // ── Estado de la sala ──────────────────────────────────────
@@ -14,11 +14,10 @@ let intervaloTimer = null;   // setInterval del countdown (1 s)
 let imagenesGaleria = [];    // Array de rutas de imágenes para el producto actual
 let indiceImagen    = 0;     // Índice de la imagen que se muestra actualmente en la galería
 
-// Estado de participación en la sesión actual (no persiste entre recargas)
-// Solo se activa después de una puja exitosa en esta sesión.
-// NOTA: el backend anonimiza postores (Postor 1, 2...) sin exponer compradorId,
-// por lo que no podemos determinar el estado "liderando" leyendo los datos de la API.
-let estadoPostorSesion = "ninguno"; // "ninguno" | "lidera" | "outbid"
+// Estado real de participación del comprador en esta subasta.
+// Se obtiene desde el backend mediante las actividades del comprador.
+// El historial público sigue mostrando los postores anonimizados.
+let actividadCompradorActual = null;
 
 // ── Nodos del DOM ──────────────────────────────────────────
 const tituloEl      = document.getElementById("sala-titulo");
@@ -91,15 +90,13 @@ async function inicializar() {
         if (bannerExitoEl) bannerExitoEl.classList.add("hidden");
     });
 
-    // resetear el estado del postor al cambiar de usuario.
-    // estadoPostorSesion es una variable en memoria ligada al usuario activo.
-    // Si no se resetea, un usuario que lideró seguirá mostrando "liderando"
-    // aunque ahora el usuario activo sea distinto.
-    window.addEventListener("usuarioCambiado", () => {
-        estadoPostorSesion = "ninguno";
+        // Al cambiar de usuario, volver a consultar su participación real.
+    window.addEventListener("usuarioCambiado", async () => {
+        actividadCompradorActual = null;
+
         if (bannerExitoEl) bannerExitoEl.classList.add("hidden");
-        // Forzar re-render del banner con el nuevo estado
-        if (estadoActual) actualizarBannerPostor(estadoActual);
+
+        await refrescar();
     });
 
     // Favorito
@@ -127,19 +124,42 @@ async function inicializar() {
 // REFRESCAR — se llama al inicio y cada 3 s
 async function refrescar() {
     try {
+        const usuarioActivo = obtenerUsuarioActivo();
+
         const [subasta, pujas] = await Promise.all([
             obtenerSubastaPorId(subastaId),
             obtenerPujas(subastaId)
         ]);
 
-        // Detectar extensión de tiempo (Anti-Sniping)
-        if (fechaFinPrevia && subasta.fechaFin !== fechaFinPrevia) {
-            mostrarBannerAntisniping(subasta.fechaFin);
-        }
-        fechaFinPrevia = subasta.fechaFin;
-        estadoActual   = subasta;
+                actividadCompradorActual = null;
 
-        actualizarUI(subasta, pujas);
+        if (usuarioActivo) {
+            try {
+                const actividadesComprador = await obtenerPujasPorComprador(usuarioActivo.id);
+
+                actividadCompradorActual =
+                    actividadesComprador.find(actividad => actividad.subastaId === subastaId) ?? null;
+            } catch (error) {
+                console.warn("No se pudo obtener la actividad del comprador:", error);
+            }
+        }
+
+        // Detectar extensión de tiempo (Anti-Sniping)
+if (fechaFinPrevia && subasta.fechaFin !== fechaFinPrevia) {
+    mostrarBannerAntisniping(subasta.fechaFin);
+}
+
+// Si la subasta terminó, el aviso de extensión ya no corresponde.
+if (subasta.estado === "FINALIZADA" || subasta.estado === "DESIERTA") {
+    if (bannerAntisnipingEl) {
+        bannerAntisnipingEl.classList.add("hidden");
+    }
+}
+
+fechaFinPrevia = subasta.fechaFin;
+estadoActual   = subasta;
+
+actualizarUI(subasta, pujas);
 
     } catch (err) {
         console.error("Error al refrescar la sala:", err);
@@ -348,14 +368,32 @@ function actualizarUI(s, pujas) {
         if (panelResultadoEl) panelResultadoEl.classList.add("hidden");
         
         // Botón de puja rápida y estado de inputs (solo si está ACTIVA o PROGRAMADA)
-        if (btnPujaRapEl) {
-            if (textoPujaRapEl) textoPujaRapEl.textContent = `PUJAR ${moneda(proxMonto)}`;
-            btnPujaRapEl.dataset.monto = proxMonto;
-            const activa = s.estado === "ACTIVA";
-            btnPujaRapEl.disabled      = !activa;
-            if (btnRealizarEl) btnRealizarEl.disabled = !activa;
-            if (inputMontoEl)  inputMontoEl.disabled  = !activa;
+       if (btnPujaRapEl) {
+    const activa = s.estado === "ACTIVA";
+    const usuarioActivo = obtenerUsuarioActivo();
+
+    btnPujaRapEl.dataset.monto = proxMonto;
+
+    if (activa && !usuarioActivo) {
+        if (textoPujaRapEl) {
+            textoPujaRapEl.textContent = "INICIAR SESIÓN PARA PUJAR";
         }
+
+        btnPujaRapEl.disabled = false;
+
+        if (btnRealizarEl) btnRealizarEl.disabled = true;
+        if (inputMontoEl) inputMontoEl.disabled = true;
+    } else {
+        if (textoPujaRapEl) {
+            textoPujaRapEl.textContent = `PUJAR ${moneda(proxMonto)}`;
+        }
+
+        btnPujaRapEl.disabled = !activa;
+
+        if (btnRealizarEl) btnRealizarEl.disabled = !activa;
+        if (inputMontoEl) inputMontoEl.disabled = !activa;
+    }
+}
     }
 
     // Banner de estado del postor (basado en la sesión actual)
@@ -476,35 +514,63 @@ function actualizarTimer(fechaFinStr, estado) {
     }
 }
 
-// BANNER POSTOR: muestra el estado dentro de la sesión actual
-// (no persiste entre recargas; el backend no expone compradorId en las pujas)
+// BANNER POSTOR: muestra el estado real del comprador según el backend
 function actualizarBannerPostor(s) {
     if (!bannerPostorEl) return;
 
-    // Si la subasta no está activa, mostrar banner correspondiente según si hubo pujas
-    if (s.estado === "FINALIZADA" || s.estado === "DESIERTA") {
-        if (s.cantidadPujas > 0) {
-            bannerPostorEl.className = "banner-estado banner-estado--lidera";
-            bannerPostorEl.innerHTML = `
-                <i class="fa-solid fa-circle-check"></i>
-                <div class="banner-estado__textos">
-                    <strong>Esta subasta ha finalizado.</strong>
-                    <span>Gracias a todos los participantes por formar parte.</span>
-                </div>`;
-        } else {
-            bannerPostorEl.className = "banner-estado banner-estado--info";
-            bannerPostorEl.innerHTML = `
-                <i class="fa-solid fa-circle-info"></i>
-                <div class="banner-estado__textos">
-                    <strong>No hubo ofertas</strong>
-                    <span>Esta subasta terminó sin pujas.</span>
-                </div>`;
-        }
+    // Si la subasta ya terminó, mostrar el resultado.
+if (s.estado === "FINALIZADA" || s.estado === "DESIERTA") {
+
+    // Si no hubo pujas, la subasta quedó desierta.
+    if (s.cantidadPujas === 0) {
+        bannerPostorEl.className = "banner-estado banner-estado--info";
+        bannerPostorEl.innerHTML = `
+            <i class="fa-solid fa-circle-info"></i>
+            <div class="banner-estado__textos">
+                <strong>No hubo ofertas</strong>
+                <span>Esta subasta terminó sin pujas.</span>
+            </div>`;
         return;
     }
 
-    // Si el usuario activo es el vendedor de esta subasta, no puede pujar
+    // Si el comprador participó, mostrar su resultado personal.
+    if (actividadCompradorActual?.gano === true) {
+        bannerPostorEl.className = "banner-estado banner-estado--lidera";
+        bannerPostorEl.innerHTML = `
+            <i class="fa-solid fa-trophy"></i>
+            <div class="banner-estado__textos">
+                <strong>¡Ganaste la subasta!</strong>
+                <span>Tu oferta fue la ganadora.</span>
+            </div>`;
+        return;
+    }
+
+    if (actividadCompradorActual?.gano === false) {
+        bannerPostorEl.className = "banner-estado banner-estado--superado";
+        bannerPostorEl.innerHTML = `
+            <i class="fa-solid fa-circle-xmark"></i>
+            <div class="banner-estado__textos">
+                <strong>No ganaste esta subasta</strong>
+                <span>Otra oferta resultó ganadora.</span>
+            </div>`;
+        return;
+    }
+
+    // Para visitantes o usuarios que no participaron.
+    bannerPostorEl.className = "banner-estado banner-estado--info";
+    bannerPostorEl.innerHTML = `
+        <i class="fa-solid fa-circle-check"></i>
+        <div class="banner-estado__textos">
+            <strong>Esta subasta ha finalizado.</strong>
+            <span>La subasta ya no acepta nuevas ofertas.</span>
+        </div>`;
+    return;
+}
+
+
     const usuarioActivo = obtenerUsuarioActivo();
+
+    // Si el usuario activo es el vendedor, no puede pujar.
     if (usuarioActivo && s.vendedorId && usuarioActivo.id === s.vendedorId) {
         bannerPostorEl.className = "banner-estado banner-estado--info";
         bannerPostorEl.innerHTML = `
@@ -516,7 +582,32 @@ function actualizarBannerPostor(s) {
         return;
     }
 
-    if (estadoPostorSesion === "lidera") {
+    // Una subasta programada todavía no permite realizar ofertas.
+    if (s.estado === "PROGRAMADA") {
+        bannerPostorEl.className = "banner-estado banner-estado--info";
+        bannerPostorEl.innerHTML = `
+            <i class="fa-solid fa-clock"></i>
+            <div class="banner-estado__textos">
+                <strong>La subasta todavía no comenzó</strong>
+                <span>Podrás realizar ofertas cuando comience.</span>
+            </div>`;
+        return;
+    }
+
+    // La sala puede verse sin iniciar sesión, pero para pujar hay que ingresar.
+    if (!usuarioActivo) {
+        bannerPostorEl.className = "banner-estado banner-estado--info";
+        bannerPostorEl.innerHTML = `
+            <i class="fa-solid fa-circle-info"></i>
+            <div class="banner-estado__textos">
+                <strong>Iniciá sesión para participar</strong>
+                <span>Podés ver la subasta y su historial sin iniciar sesión.</span>
+            </div>`;
+        return;
+    }
+
+    // El backend informa si este comprador está liderando.
+    if (actividadCompradorActual?.liderando === true) {
         bannerPostorEl.className = "banner-estado banner-estado--lidera";
         bannerPostorEl.innerHTML = `
             <i class="fa-solid fa-trophy"></i>
@@ -524,15 +615,15 @@ function actualizarBannerPostor(s) {
                 <strong>Estás liderando la subasta</strong>
                 <span>Tu oferta actual es la más alta.</span>
             </div>`;
-    } else if (estadoPostorSesion === "outbid") {
+    } else if (actividadCompradorActual?.liderando === false) {
         bannerPostorEl.className = "banner-estado banner-estado--outbid";
         bannerPostorEl.innerHTML = `
             <i class="fa-solid fa-circle-exclamation"></i>
             <div class="banner-estado__textos">
-                <strong>¡Fuiste superado!</strong>
-                <span>Otro postor ofreció más que vos.</span>
+                <strong>¡Tu oferta fue superada!</strong>
+                <span>Otro postor realizó una oferta más alta.</span>
             </div>`;
-    } else {
+      } else {
         bannerPostorEl.className = "banner-estado banner-estado--info";
         bannerPostorEl.innerHTML = `
             <i class="fa-solid fa-circle-info"></i>
@@ -542,8 +633,16 @@ function actualizarBannerPostor(s) {
             </div>`;
     }
 }
+
 // ENVIAR PUJA RÁPIDA (botón "PUJAR $X")
 async function enviarPujaRapida() {
+    const usuario = obtenerUsuarioActivo();
+
+    if (!usuario) {
+        window.location.href = "login.html";
+        return;
+    }
+
     const monto = parseFloat(btnPujaRapEl?.dataset.monto ?? 0);
     await enviarPuja(monto);
 }
@@ -551,29 +650,31 @@ async function enviarPujaRapida() {
 // ENVIAR PUJA MANUAL (campo + botón "REALIZAR PUJA")
 async function enviarPujaManual() {
     const monto = parseFloat(inputMontoEl?.value ?? 0);
+
     if (!monto || monto <= 0) {
         mostrarToast("Ingresá un monto válido.", "error");
         return;
     }
+
     await enviarPuja(monto);
 }
 
 // ENVIAR PUJA — lógica central con manejo de 201 / 400 / 409
 async function enviarPuja(monto) {
     const usuario = obtenerUsuarioActivo();
-    if (!usuario) { mostrarToast("Seleccioná un usuario activo.", "error"); return; }
+
+    if (!usuario) {
+        mostrarToast("Iniciá sesión para realizar una puja.", "error");
+        return;
+    }
 
     // Estado visual: PROCESANDO
     setBotonsPuja(true);
 
-    // Guardar el estado previo para poder restaurarlo si falla
-    const estadoAnterior = estadoPostorSesion;
-
     try {
         await realizarPuja(subastaId, usuario.id, monto);
 
-        // 201 — Éxito: actualizar estado en memoria y mostrar banner superior
-        estadoPostorSesion = "lidera";
+        // 201 — Éxito
         if (inputMontoEl) inputMontoEl.value = "";
 
         // Mostrar banner de éxito superior
@@ -582,25 +683,41 @@ async function enviarPuja(monto) {
             setTimeout(() => bannerExitoEl.classList.add("hidden"), 5000);
         }
 
-        // Refrescar inmediatamente sin esperar el polling
+        // El estado de liderazgo no se calcula en el frontend.
+        // Se vuelve a consultar al backend.
         await refrescar();
 
     } catch (err) {
         const tipo    = err.tipo    ?? "ERROR";
         const mensaje = err.mensaje ?? err.message ?? "Error al registrar la puja.";
+if (tipo === "CONCURRENCIA") {
+    // 409 — la subasta cambió mientras se intentaba registrar la puja.
+    mostrarToast(
+        "La subasta cambió mientras realizabas tu oferta. Revisá la nueva puja mínima e intentá nuevamente.",
+        "warn"
+    );
+} else if (mensaje.toLowerCase().includes("saldo insuficiente")) {
+    // 400 — el backend rechazó la puja porque no hay saldo disponible suficiente.
+    bannerPostorEl.className = "banner-estado banner-estado--superado";
+    bannerPostorEl.innerHTML = `
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <div class="banner-estado__textos">
+            <strong>Saldo insuficiente</strong>
+            <span>No tenés saldo disponible suficiente para realizar esta puja.</span>
+            <a href="billetera.html">IR A BILLETERA</a>
+        </div>`;
 
-        if (tipo === "CONCURRENCIA") {
-            // 409: alguien pujó antes. Si liderábamos, perdimos el liderazgo.
-            mostrarToast(mensaje, "warn");
-            estadoPostorSesion = estadoAnterior === "lidera" ? "outbid" : estadoAnterior;
-        } else {
-            // 400 (saldo, monto bajo, vendedor pujando, etc.) u otro error:
-            // NO modificar estadoPostorSesion — la puja falló, el estado del
-            // usuario activo no cambió respecto a esta subasta.
-            mostrarToast(mensaje, "error");
-        }
+    mostrarToast("Saldo insuficiente.", "error");
+} else {
+    // Otro error: mostrar el mensaje informado por el backend.
+    mostrarToast(mensaje, "error");
+}
+        // Actualizar la sala, excepto cuando queremos mantener visible
+// el aviso específico de saldo insuficiente.
+if (!mensaje.toLowerCase().includes("saldo insuficiente")) {
+    await refrescar();
+}
 
-        await refrescar();
     } finally {
         setBotonsPuja(false);
     }
