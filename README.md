@@ -1419,20 +1419,37 @@ Antes de realizar la entrega final se debe comprobar:
 
 # 58. Prueba final de concurrencia
 
-La prueba final de concurrencia se realiza sobre una Base de Datos limpia y con un escenario controlado.
+La prueba final de concurrencia se realizó sobre una Base de Datos restaurada desde las migraciones y cargada nuevamente con el seed.
 
-Se envían solicitudes de puja simultáneas sobre la misma subasta para comprobar que el sistema no deje datos inconsistentes.
+Se utilizó la subasta activa estándar. Antes de comenzar tenía una puja actual de $45.000 y 2 pujas registradas.
 
-Después de realizar la prueba final, se debe documentar aquí:
+Se enviaron 50 solicitudes HTTP de puja prácticamente al mismo tiempo, todas por un monto de $46.000.
 
-```text
-Cantidad de solicitudes:
-Resultado HTTP:
-Cantidad de pujas persistidas:
-Resultado de la verificación en Base de Datos:
-```
+El resultado real obtenido fue:
 
-Este apartado se completa con el resultado real de la prueba y no con un resultado supuesto.
+201 Created: 1 solicitud
+409 Conflict: 7 solicitudes
+400 Bad Request: 42 solicitudes
+
+Los conflictos de concurrencia devolvieron HTTP 409 Conflict con el siguiente mensaje:
+
+"La operación no pudo realizarse porque la subasta o la billetera fue modificada por otra operación."
+
+Después de ejecutar las 50 solicitudes se volvió a consultar la subasta.
+
+Estado inicial:
+Puja actual: $45.000
+Cantidad de pujas: 2
+
+Estado final:
+Puja actual: $46.000
+Cantidad de pujas: 3
+
+Por lo tanto, solamente se persistió una nueva puja.
+
+Los 409 Conflict demuestran que el sistema detectó operaciones que intentaron modificar concurrentemente el mismo estado. Las solicitudes que devolvieron 400 Bad Request fueron rechazadas por las validaciones de negocio una vez que la puja válida de $46.000 ya había modificado el estado de la subasta.
+
+Después de esta prueba, la Base de Datos se restaura nuevamente para dejar la entrega con los datos definidos por el seed.
 
 ---
 
