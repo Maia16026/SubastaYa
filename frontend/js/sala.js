@@ -18,6 +18,7 @@ let indiceImagen    = 0;     // Índice de la imagen que se muestra actualmente 
 // Se obtiene desde el backend mediante las actividades del comprador.
 // El historial público sigue mostrando los postores anonimizados.
 let actividadCompradorActual = null;
+let saldoInsuficienteVisible = false;
 
 // ── Nodos del DOM ──────────────────────────────────────────
 const tituloEl      = document.getElementById("sala-titulo");
@@ -518,6 +519,12 @@ function actualizarTimer(fechaFinStr, estado) {
 function actualizarBannerPostor(s) {
     if (!bannerPostorEl) return;
 
+    // Si una puja fue rechazada por falta de saldo,
+    // mantener el aviso aunque continúe el polling.
+    if (saldoInsuficienteVisible) {
+        return;
+    }
+
     // Si la subasta ya terminó, mostrar el resultado.
 if (s.estado === "FINALIZADA" || s.estado === "DESIERTA") {
 
@@ -697,8 +704,9 @@ if (tipo === "CONCURRENCIA") {
         "warn"
     );
 } else if (mensaje.toLowerCase().includes("saldo insuficiente")) {
-    // 400 — el backend rechazó la puja porque no hay saldo disponible suficiente.
-    bannerPostorEl.className = "banner-estado banner-estado--superado";
+    saldoInsuficienteVisible = true;
+
+    // 400 — el backend rechazó la puja porque no hay saldo disponible suficiente.    bannerPostorEl.className = "banner-estado banner-estado--superado";
     bannerPostorEl.innerHTML = `
         <i class="fa-solid fa-circle-exclamation"></i>
         <div class="banner-estado__textos">
